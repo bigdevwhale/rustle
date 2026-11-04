@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="WidgetButton">
+        <item name="android:background">@drawable/widget_button</item>
+        <item name="android:fontFamily">@font/m6x11</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:textColor">#FF1B140E</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+</resources>
