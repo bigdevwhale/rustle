@@ -59,12 +59,12 @@ class Widget : AppWidgetProvider() {
         val s = c.store.now()
         val h = Home(s, System.currentTimeMillis(), ctx.ru)
         when (what) {
-            PET -> if (h.away == null && h.asleep == null) c.pet()
+            PET -> if (h.away == null && h.asleep == null && h.surfing == null) c.pet()
             FEED -> {
                 val f = h.food.firstOrNull()
                 if (f == null) toast(ctx, ctx.getString(R.string.wd_no_food)) else { c.feed(f); toast(ctx, ctx.getString(R.string.wd_fed, f.name.of(ctx.ru))) }
             }
-            SEND -> if (h.away == null && h.asleep == null) {
+            SEND -> if (h.away == null && h.asleep == null && h.surfing == null) {
                 val last = s.trips.firstOrNull()
                 val d = last?.district?.takeIf { it in h.open } ?: h.open.last()
                 val m = last?.minutes?.takeIf { it in listOf(15, 25, 45, 60, 90) } ?: 25

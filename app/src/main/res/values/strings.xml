@@ -280,7 +280,35 @@
     <string name="community_follow_sub">a message when a new version is out</string>
     <string name="community_chat">StillCraft chat</string>
     <string name="community_chat_sub">people who use these apps</string>
+    <string name="community_support">Support Rustle</string>
+    <string name="community_support_sub">for stove wood and new outings</string>
     <string name="about">About</string>
     <string name="about_text">Rustle %1$s. Everything stays on the phone. The internet is used only for the weather in the window, if you turn it on. Font: m6x11 by Daniel Linssen.</string>
     <string name="source">Source code</string>
+    <!-- The weekly spring-clean and trips into the Net (#1). -->
+    <string name="h_clean_t">Spring-clean</string>
+    <string name="h_clean_have">A week has gone by and the glass is dusty. There is a cloth ready (%1$d in the drawer).</string>
+    <string name="h_clean_go">Wipe the phone</string>
+    <string name="h_clean_none">A week has gone by and the glass is dusty. He needs a cloth: sew one in the workshop from three threads.</string>
+    <string name="h_clean_to">To the workshop</string>
+    <string name="cl_title">Spring-clean</string>
+    <string name="cl_sub">%1$s is rubbing the glass from the inside. The dust is flying!</string>
+    <string name="cl_done_t">Sparkling!</string>
+    <string name="cl_done">The cloth is worn through, but the glass shines. %1$s is very pleased.</string>
+    <string name="cl_found">Swept out of a corner: %1$s</string>
+    <string name="cl_ok">Lovely</string>
+    <string name="h_net_t">Into the Net</string>
+    <string name="h_net_text">The phone has caught Wi-Fi. %1$s can pop into the Net for %2$d minutes and tell you what is going on out there. Once a day.</string>
+    <string name="h_net_go">Let him go</string>
+    <string name="h_net_away">%1$s is in the Net</string>
+    <string name="h_net_hint">He is only looking around. No need to put the phone down.</string>
+    <string name="n_net">Off into the Net</string>
+    <string name="n_net_b">%1$s will be back in %2$d minutes with news.</string>
+    <string name="t_busy_net">%1$s is in the Net. Plan an outing when he is back.</string>
+    <string name="net_back_t">%1$s is back from the Net</string>
+    <string name="net_back_sub">News of the world, as he tells it</string>
+    <string name="net_ok">Well I never</string>
+    <string name="w_cloth_stock">In the drawer: %1$d</string>
+    <string name="w_sew">Sew</string>
+    <string name="w_cloth_full">That will do for now: three is plenty.</string>
 </resources>

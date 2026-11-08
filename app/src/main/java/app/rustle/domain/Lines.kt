@@ -25,6 +25,12 @@ object Lines {
         ),
     )
 
+    /** What he says when a week has gone by since the last spring-clean (#1). */
+    val dusty = listOf(
+        l("There's dust on the glass. I can hardly see you.", "На стекле пыль. Я тебя еле вижу."),
+        l("Time for a spring-clean, don't you think? Have we got a cloth?", "Пора бы устроить генеральную уборку. Тряпочка у нас есть?"),
+    )
+
     /** What he says about the weather outside the window. */
     val weather: Map<Wx, List<L>> = mapOf(
         Wx.RAIN to listOf(l("Rain on the window. Good to be home.", "Дождь по окну. Хорошо, что я дома."), l("Listen to it drumming on the camera.", "Слышишь, как стучит по камере?")),

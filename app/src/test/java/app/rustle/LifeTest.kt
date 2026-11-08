@@ -107,4 +107,42 @@ class LifeTest {
             trip = Trip(District.CELLAR, 10, 25, peekMs = 7, unlockAt = 3), night = Night(1, true, 2, 0, 0))
         assertEquals(s, Json.read(Json.write(s)))
     }
+    /** The spring-clean and the Net (#1): new fields survive a save and old saves load with them empty. */
+    @Test fun choresSaveAndOldSavesLoad() {
+        val s = State(onboarded = true, cloths = 2, cleanAt = 5 * DAY, cleans = 3, netAt = 77, netDay = 20, netTrips = 9)
+        assertEquals(s, Json.read(Json.write(s)))
+        val old = Json.read("""{"onboarded":true,"name":"x"}""")
+        assertEquals(0, old.cloths); assertEquals(0L, old.cleanAt); assertEquals(0L, old.netAt); assertEquals(0, old.netTrips)
+    }
+
+    @Test fun springCleanComesWeekly() {
+        val sc = app.rustle.domain.SpringClean
+        val s = State(onboarded = true, started = 10 * DAY)
+        assertTrue(!sc.due(s, 16 * DAY))
+        assertTrue(sc.due(s, 17 * DAY))
+        assertTrue(!sc.due(s.copy(cleanAt = 17 * DAY), 23 * DAY))
+        assertTrue(sc.due(s.copy(cleanAt = 17 * DAY), 24 * DAY))
+        assertTrue(!sc.canSew(State(inv = mapOf("thread_red" to 2))))
+        assertTrue(sc.canSew(State(inv = mapOf("thread_red" to 2, "thread_gold" to 1))))
+        assertTrue(!sc.canSew(State(inv = mapOf("thread_red" to 9), cloths = sc.MAX_CLOTHS)))
+        assertTrue(!sc.find(s, 3).shape.food)
+    }
+
+    @Test fun netOnWifiOnceADay() {
+        val net = app.rustle.domain.Net
+        val now = 100 * DAY + 12 * HOUR
+        val s = State(onboarded = true)
+        assertTrue(net.canGo(s, now, wifi = true))
+        assertTrue(!net.canGo(s, now, wifi = false))
+        assertTrue(!net.canGo(s.copy(netDay = World.dayOf(now)), now, wifi = true))
+        assertTrue(!net.canGo(s.copy(trip = Trip(District.PORT, now - MIN, 25)), now, wifi = true))
+        assertTrue(!net.canGo(s.copy(night = Night(now - HOUR, true)), now, wifi = true))
+        val gone = s.copy(netAt = now)
+        assertTrue(net.inNet(gone, now + 5 * MIN) && !net.back(gone, now + 5 * MIN))
+        assertTrue(net.back(gone, now + net.LENGTH))
+        // A whole round of news before any repeats, and lines that keep to the house style.
+        assertTrue(net.news.size >= 60)
+        assertEquals(net.news.indices.toSet(), net.news.indices.map { net.line(s, it) }.toSet())
+        for (l in net.news) assertTrue(l.ru, '—' !in l.ru && '—' !in l.en)
+    }
 }

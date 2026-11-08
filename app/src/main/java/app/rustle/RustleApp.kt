@@ -20,6 +20,8 @@ import app.rustle.domain.Grade
 import app.rustle.domain.Kind
 import app.rustle.domain.Lines
 import app.rustle.domain.Needs
+import app.rustle.domain.Net
+import app.rustle.domain.SpringClean
 import app.rustle.domain.Nights
 import app.rustle.domain.Slot
 import app.rustle.domain.Sky
@@ -54,6 +56,8 @@ class AppContainer(context: Context) {
     val back = MutableStateFlow<Return?>(null)
     val morning = MutableStateFlow<Morning?>(null)
     val news = MutableStateFlow<News?>(null)
+    /** The piece of news he brought back from the Net ([Net.news] index), for its sheet (#1). */
+    val netBack = MutableStateFlow<Int?>(null)
 
     fun write(block: suspend AppContainer.() -> Unit) { scope.launch { block() } }
 
@@ -250,6 +254,43 @@ class AppContainer(context: Context) {
         gift?.let { news.value = News(gift = it, request = true) }
     }
 
+    /** Sews a cloth from threads for the spring-clean (#1). */
+    suspend fun sewCloth() {
+        store.update { s -> if (!SpringClean.canSew(s)) s else s.copy(inv = Catalog.pay(s.inv, SpringClean.clothCost), cloths = s.cloths + 1) }
+    }
+
+    /** The spring-clean done (#1): the cloth is worn through, he is pleased, and something turns up from under the dust. */
+    suspend fun clean(): Find? {
+        val now = System.currentTimeMillis()
+        var got: Find? = null
+        store.update { s ->
+            if (s.cloths <= 0 || !SpringClean.due(s, now)) return@update s
+            val f = SpringClean.find(s, World.dayOf(now))
+            got = f
+            Needs.cheer(s, now, SpringClean.MOOD).copy(cloths = s.cloths - 1, cleanAt = now, cleans = s.cleans + 1,
+                inv = s.inv + (f.key to (s.inv[f.key] ?: 0) + 1), seen = if (f.key in s.seen) s.seen else s.seen + (f.key to now)).cared(now)
+        }
+        return got
+    }
+
+    /** Off into the Net while the phone is on Wi-Fi (#1). */
+    suspend fun goNet(wifi: Boolean) {
+        val now = System.currentTimeMillis()
+        store.update { s -> if (!Net.canGo(s, now, wifi)) s else s.copy(netAt = now, netDay = World.dayOf(now)).cared(now) }
+    }
+
+    /** Back from the Net with a piece of news (#1). */
+    suspend fun claimNet() {
+        val now = System.currentTimeMillis()
+        var line: Int? = null
+        store.update { s ->
+            if (!Net.back(s, now)) return@update s
+            line = Net.line(s, s.netTrips)
+            Needs.cheer(s, now, 6).copy(netAt = 0, netTrips = s.netTrips + 1)
+        }
+        line?.let { netBack.value = it }
+    }
+
     /**
      * Finds roughly where the phone is from the last known position (network or GPS, whichever the
      * phone already has), rounds it to about a kilometre and names the town if the phone can.
@@ -304,6 +345,7 @@ class AppContainer(context: Context) {
     suspend fun resume() {
         claimIfBack()
         claimMorning()
+        claimNet()
         greetMorning()
         refreshWeather()
         val s = store.now()

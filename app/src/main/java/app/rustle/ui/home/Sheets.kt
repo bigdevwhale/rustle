@@ -145,6 +145,17 @@ fun MorningSheet(h: Home, m: Morning, onDone: () -> Unit) {
     }
 }
 
+/** Back from the Net with a piece of news (#1). */
+@Composable
+fun NetSheet(h: Home, line: Int, onDone: () -> Unit) {
+    Sheet(onDone) {
+        Text(stringResource(R.string.net_back_t, h.name), style = T.Title)
+        Text(stringResource(R.string.net_back_sub), style = T.Small)
+        Says(app.rustle.domain.Net.news[line % app.rustle.domain.Net.news.size].of(h.ru), who = h.name)
+        PixelButton(stringResource(R.string.net_ok), onDone, Modifier.fillMaxWidth().padding(top = 6.dp))
+    }
+}
+
 fun rarity(rare: Int) = when (rare) { 1 -> R.string.rare_1; 2 -> R.string.rare_2; else -> R.string.rare_3 }
 
 

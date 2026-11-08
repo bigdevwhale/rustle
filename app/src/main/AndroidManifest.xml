@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- The weather in the camera window: a rough location, sent only to the weather service. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Whether the phone is on Wi-Fi: he only goes into the Net then. Nothing is fetched for it. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-feature android:name="android.hardware.location" android:required="false" />
 

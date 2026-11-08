@@ -49,6 +49,8 @@ object DemoSeed {
             cooked = mapOf("tea" to 3, "pie" to 3), species = "MOUSE", marks = "NONE",
             lat = 59.94, lon = 30.31, placeName = if (ru) "Санкт-Петербург" else "Saint Petersburg", locAsked = true, wx = "SNOW", temp = -2, wxAt = now,
             place = mapOf("FRONT_L" to "armchair", "FRONT_R" to "fern"),
+            // Cleaned two days ago, a cloth in the drawer for next time (#1).
+            cloths = 1, cleanAt = now - 2 * DAY, cleans = 2,
         )
         return st.copy(feats = app.rustle.domain.Feats.fresh(st).associate { it.key to now - DAY })
     }

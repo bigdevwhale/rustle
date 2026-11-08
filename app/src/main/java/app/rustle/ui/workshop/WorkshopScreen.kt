@@ -61,6 +61,7 @@ fun WorkshopScreen(h: Home) {
                 bus.note(ctx.getString(R.string.w_made, b.name.of(h.ru)),
                     if (opened != null) ctx.getString(R.string.w_opened, opened.name_.of(h.ru)) else b.note.of(h.ru))
             }
+            if (tab == 0) ClothCard(h, have)
         } else {
             Text(stringResource(R.string.w_kitchen_sub), style = T.Small.copy(color = C.textDim))
             for (d in Catalog.dishes) Panel(Modifier.fillMaxWidth()) {
@@ -69,9 +70,33 @@ fun WorkshopScreen(h: Home) {
                     Text(stringResource(R.string.w_dish, d.full, d.mood), style = T.Small)
                 }
                 Cost(d.cost, have, h.ru)
-                if (Catalog.canPay(h.s.inv, d.cost) && h.away == null) PixelButton(stringResource(R.string.w_cook), { c.write { cook(d) }; bus.note(d.name.of(h.ru), ctx.getString(R.string.w_ate, h.name)) },
+                if (Catalog.canPay(h.s.inv, d.cost) && h.away == null && h.surfing == null) PixelButton(stringResource(R.string.w_cook), { c.write { cook(d) }; bus.note(d.name.of(h.ru), ctx.getString(R.string.w_ate, h.name)) },
                     Modifier.fillMaxWidth().padding(top = 6.dp), small = true)
             }
+        }
+    }
+}
+
+/** Cloths for the spring-clean (#1): sewn again and again, each one worn out by one clean. */
+@Composable
+private fun ClothCard(h: Home, have: (app.rustle.domain.Shape) -> Int) {
+    val ctx = LocalContext.current
+    val c = ctx.container
+    val bus = LocalBus.current
+    val sc = app.rustle.domain.SpringClean
+    Panel(Modifier.fillMaxWidth(), fill = if (h.s.cloths > 0) C.note else C.paper) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(sc.cloth.of(h.ru), style = T.Name, modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.w_cloth_stock, h.s.cloths), style = T.Small.copy(color = if (h.s.cloths > 0) C.ok else C.muted))
+        }
+        Text(sc.clothNote.of(h.ru), style = T.Small)
+        if (h.s.cloths >= sc.MAX_CLOTHS) Text(stringResource(R.string.w_cloth_full), style = T.Small.copy(color = C.muted))
+        else {
+            Cost(sc.clothCost, have, h.ru)
+            if (sc.canSew(h.s)) PixelButton(stringResource(R.string.w_sew), {
+                c.write { sewCloth() }
+                bus.note(ctx.getString(R.string.w_made, sc.cloth.of(h.ru)), sc.clothNote.of(h.ru))
+            }, Modifier.fillMaxWidth().padding(top = 6.dp), small = true)
         }
     }
 }

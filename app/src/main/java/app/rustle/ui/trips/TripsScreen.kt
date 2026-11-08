@@ -64,9 +64,9 @@ fun TripsScreen(h: Home, nav: Nav) {
     }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Tip("trips", stringResource(R.string.tip_trips_t), stringResource(R.string.tip_trips), h.look, h.s.tips)
-        val busy = h.away != null || h.asleep != null
+        val busy = h.away != null || h.asleep != null || h.surfing != null
         if (busy) Panel(Modifier.fillMaxWidth(), fill = C.note) {
-            Text(stringResource(if (h.away != null) R.string.t_busy_away else R.string.t_busy_sleep, h.name), style = T.Body)
+            Text(stringResource(when { h.away != null -> R.string.t_busy_away; h.surfing != null -> R.string.t_busy_net; else -> R.string.t_busy_sleep }, h.name), style = T.Body)
             PixelButton(stringResource(R.string.t_to_home), { nav.tab(Tab.HOME) }, Modifier.fillMaxWidth().padding(top = 8.dp), small = true)
         }
         Section(stringResource(R.string.t_where))

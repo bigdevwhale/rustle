@@ -5,6 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.Sensor
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.os.Handler
+import android.os.Looper
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
@@ -36,6 +41,8 @@ data class Phone(
     val faceDown: Boolean = false,
     /** Share of storage in use, 0..1: the attic gets dusty. */
     val storage: Float = 0f,
+    /** On Wi-Fi: the way into the Net is open (#1). */
+    val wifi: Boolean = false,
 ) {
     val low get() = level <= 15 && !charging
     val hot get() = (tempC ?: 0f) >= 41f
@@ -47,7 +54,7 @@ data class Phone(
 object Device {
     fun battery(ctx: Context): Phone {
         val i = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)) ?: return Phone()
-        return fromBattery(i, Phone(storage = storage()))
+        return fromBattery(i, Phone(storage = storage(), wifi = wifi(ctx)))
     }
 
     fun fromBattery(i: Intent, p: Phone): Phone {
@@ -66,6 +73,11 @@ object Device {
         val s = StatFs(Environment.getDataDirectory().path)
         1f - s.availableBytes.toFloat() / s.totalBytes.toFloat()
     }.getOrDefault(0f)
+
+    fun wifi(ctx: Context): Boolean = runCatching {
+        val cm = ctx.getSystemService(ConnectivityManager::class.java)
+        cm.getNetworkCapabilities(cm.activeNetwork)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+    }.getOrDefault(false)
 
     fun hasAccelerometer(ctx: Context) = (ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager).getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
 }
@@ -106,11 +118,22 @@ fun rememberPhone(still: Phone? = null): Phone {
             }
             override fun onAccuracyChanged(s: Sensor?, a: Int) = Unit
         }
+        // Wi-Fi coming and going opens and closes the way into the Net (#1).
+        val cm = ctx.getSystemService(ConnectivityManager::class.java)
+        val net = object : ConnectivityManager.NetworkCallback() {
+            override fun onCapabilitiesChanged(n: Network, caps: NetworkCapabilities) {
+                val w = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                if (w != phone.wifi) phone = phone.copy(wifi = w)
+            }
+            override fun onLost(n: Network) { if (phone.wifi) phone = phone.copy(wifi = Device.wifi(ctx)) }
+        }
+        runCatching { cm.registerDefaultNetworkCallback(net, Handler(Looper.getMainLooper())) }
         sm.getDefaultSensor(Sensor.TYPE_LIGHT)?.let { sm.registerListener(lis, it, SensorManager.SENSOR_DELAY_NORMAL) }
         sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { sm.registerListener(lis, it, SensorManager.SENSOR_DELAY_GAME) }
         onDispose {
             runCatching { ctx.unregisterReceiver(rcv) }
             sm.unregisterListener(lis)
+            runCatching { cm.unregisterNetworkCallback(net) }
         }
     }
     return phone

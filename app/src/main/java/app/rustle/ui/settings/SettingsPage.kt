@@ -56,6 +56,7 @@ object Community {
     const val IDEA = "${BOT}wish_$SLUG"
     const val FOLLOW = "${BOT}f_$SLUG"
     const val CHAT = "https://t.me/+Q4gFEDk8O842OGVi"
+    const val SUPPORT = "https://bigdevwhale.github.io/stillcraft/support/"
 }
 
 /** The settings' own pages. */
@@ -164,6 +165,7 @@ fun SettingsPage(s: State, nav: Nav) {
                 Triple(R.string.community_idea, R.string.community_idea_sub, Community.IDEA),
                 Triple(R.string.community_follow, R.string.community_follow_sub, Community.FOLLOW),
                 Triple(R.string.community_chat, R.string.community_chat_sub, Community.CHAT),
+                Triple(R.string.community_support, R.string.community_support_sub, Community.SUPPORT),
             )) Row(stringResource(label), stringResource(subtitle)) { open(url) }
         }
 

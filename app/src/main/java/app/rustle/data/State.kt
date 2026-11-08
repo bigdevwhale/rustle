@@ -98,4 +98,12 @@ data class State(
     val wx: String = "",
     val temp: Int = Int.MIN_VALUE,
     val wxAt: Long = 0,
+    /** Cloths sewn and not yet worn out, the last spring-clean and how many there were (#1). */
+    val cloths: Int = 0,
+    val cleanAt: Long = 0,
+    val cleans: Int = 0,
+    /** A trip into the Net under way (its start, 0 when home), the day of the last one, and how many in all (#1). */
+    val netAt: Long = 0,
+    val netDay: Long = 0,
+    val netTrips: Int = 0,
 )

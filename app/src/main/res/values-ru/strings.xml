@@ -280,7 +280,35 @@
     <string name="community_follow_sub">сообщение, когда выйдет новая версия</string>
     <string name="community_chat">Чат StillCraft</string>
     <string name="community_chat_sub">люди, которые пользуются этими приложениями</string>
+    <string name="community_support">Поддержать Шуршика</string>
+    <string name="community_support_sub">на дрова для печки и новые вылазки</string>
     <string name="about">О приложении</string>
     <string name="about_text">Шуршик %1$s. Всё хранится на телефоне. Интернет нужен только для погоды за окном, если её включить. Шрифт: m6x11 Даниэля Линссена.</string>
     <string name="source">Исходный код</string>
+    <!-- Генеральная уборка и походы в Сеть (#1). -->
+    <string name="h_clean_t">Генеральная уборка</string>
+    <string name="h_clean_have">Прошла неделя, стекло запылилось. Тряпочка есть, в запасе: %1$d.</string>
+    <string name="h_clean_go">Протереть телефон</string>
+    <string name="h_clean_none">Прошла неделя, стекло запылилось. Нужна тряпочка – её шьют в мастерской из трёх ниток.</string>
+    <string name="h_clean_to">В мастерскую</string>
+    <string name="cl_title">Генеральная уборка</string>
+    <string name="cl_sub">%1$s трёт стекло изнутри. Пыль столбом!</string>
+    <string name="cl_done_t">Блестит!</string>
+    <string name="cl_done">Тряпочка протёрлась до дыр, зато стекло сияет. %1$s очень доволен.</string>
+    <string name="cl_found">Вымел из угла: %1$s</string>
+    <string name="cl_ok">Красота</string>
+    <string name="h_net_t">Поход в Сеть</string>
+    <string name="h_net_text">Телефон поймал вай-фай. %1$s может сбегать в Сеть на %2$d минут и рассказать, что там творится. Раз в день.</string>
+    <string name="h_net_go">Отпустить в Сеть</string>
+    <string name="h_net_away">%1$s в Сети</string>
+    <string name="h_net_hint">Он просто глазеет по сторонам. Телефон можно не откладывать.</string>
+    <string name="n_net">Ушёл в Сеть</string>
+    <string name="n_net_b">%1$s вернётся через %2$d минут с новостями.</string>
+    <string name="t_busy_net">%1$s сейчас в Сети. Вылазку задумаем, когда вернётся.</string>
+    <string name="net_back_t">%1$s вернулся из Сети</string>
+    <string name="net_back_sub">Новости со всего света в его пересказе</string>
+    <string name="net_ok">Вот это да</string>
+    <string name="w_cloth_stock">В запасе: %1$d</string>
+    <string name="w_sew">Сшить</string>
+    <string name="w_cloth_full">Пока хватит: трёх вполне достаточно.</string>
 </resources>

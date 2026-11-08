@@ -75,14 +75,16 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
     var hush by remember { mutableIntStateOf(0) }
     val scene = NookScene(
         look = h.look, pose = pose, level = phone.level, charging = phone.charging, hour = h.hour, dark = phone.dark, sunny = phone.sunny,
-        dusty = phone.storage > .85f, built = h.placed, shelf = h.best, sproutDays = h.days, pettedTick = pettedTick, wx = h.wx,
+        dusty = phone.storage > .85f || h.cleanDue, built = h.placed, shelf = h.best, sproutDays = h.days, pettedTick = pettedTick, wx = h.wx,
     )
     val away = h.away
     val asleep = h.asleep
     val line = when {
-        away != null -> null
+        away != null || h.surfing != null -> null
         asleep != null -> if (hush % 2 == 1) stringResource(R.string.h_shh) else Lines.say.getValue(Pose.SLEEP)[(h.now / (5 * MIN)).toInt() % 2].of(h.ru)
         pose == Pose.COLD && "scarf" in h.s.wear -> stringResource(R.string.h_scarf)
+        // A week since the last spring-clean: now and then he mentions the dust (#1).
+        pose == Pose.IDLE && h.cleanDue && (h.now / (3 * MIN)) % 3 == 1L -> Lines.dusty[((h.now / (9 * MIN)) % Lines.dusty.size).toInt()].of(h.ru)
         // Now and then, when it is idle, he talks about the weather outside.
         pose == Pose.IDLE && h.wx != null && (h.now / (3 * MIN)) % 3 == 0L -> Lines.weather.getValue(h.wx).let { it[((h.now / (9 * MIN)) % it.size).toInt()].of(h.ru) }
         else -> Lines.say.getValue(pose).let { it[((h.now / (3 * MIN)) % it.size).toInt()].of(h.ru) }
@@ -123,6 +125,7 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
                     Text(stringResource(R.string.h_asleep, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(asleep.start))), style = T.Small.copy(color = C.textDim))
                     Tile(Icons.sun, stringResource(R.string.h_morning), Modifier.fillMaxWidth(), C.copper) { c.write { wake() } }
                 }
+                h.surfing != null -> NetAway(h, h.surfing)
                 away == null -> {
                     val bed = Nights.bedtime(h.now)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -133,6 +136,8 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
                     }
                     if (bed && !phone.charging) Text(stringResource(R.string.h_bed_hint), style = T.Small.copy(color = C.textDim))
                     if (h.s.trips.isEmpty()) Text(stringResource(R.string.h_first), style = T.Small.copy(color = C.textDim))
+                    if (h.cleanDue) CleanCard(h, nav)
+                    if (app.rustle.domain.Net.canGo(h.s, h.now, phone.wifi)) NetCard(h, phone)
                     Goal(h, nav)
                 }
             }
@@ -241,6 +246,53 @@ private fun Asks(h: Home) {
                 }
             }
         }
+    }
+}
+
+/** A week since the last spring-clean (#1): wipe the phone with a cloth, or go and sew one. */
+@Composable
+private fun CleanCard(h: Home, nav: Nav) {
+    val sc = app.rustle.domain.SpringClean
+    val have = h.s.cloths > 0
+    Panel(Modifier.fillMaxWidth(), fill = if (have) C.copperL else C.note) {
+        Text(stringResource(R.string.h_clean_t), style = T.Name)
+        if (have) {
+            Text(stringResource(R.string.h_clean_have, h.s.cloths), style = T.Small)
+            PixelButton(stringResource(R.string.h_clean_go), { nav.go(Overlay.Clean) }, Modifier.fillMaxWidth().padding(top = 8.dp), small = true)
+        } else {
+            Text(stringResource(R.string.h_clean_none), style = T.Small)
+            Cost(sc.clothCost, { Catalog.have(h.s.inv, it) }, h.ru)
+            PixelButton(stringResource(R.string.h_clean_to), { nav.tab(Tab.WORKSHOP) }, Modifier.fillMaxWidth().padding(top = 8.dp), kind = Kind.PALE, small = true)
+        }
+    }
+}
+
+/** On Wi-Fi, once a day, he may pop into the Net (#1). */
+@Composable
+private fun NetCard(h: Home, phone: Phone) {
+    val ctx = LocalContext.current
+    val c = ctx.container
+    val bus = app.rustle.ui.LocalBus.current
+    val n = app.rustle.domain.Net.MINUTES
+    Panel(Modifier.fillMaxWidth(), fill = C.note) {
+        Text(stringResource(R.string.h_net_t), style = T.Name)
+        Text(stringResource(R.string.h_net_text, h.name, n), style = T.Small)
+        PixelButton(stringResource(R.string.h_net_go), {
+            c.write { goNet(phone.wifi) }
+            bus.note(ctx.getString(R.string.n_net), ctx.getString(R.string.n_net_b, h.name, n))
+        }, Modifier.fillMaxWidth().padding(top = 8.dp), small = true)
+    }
+}
+
+/** While he is in the Net: when he will be back (#1). */
+@Composable
+private fun NetAway(h: Home, start: Long) {
+    val due = start + app.rustle.domain.Net.LENGTH
+    Panel(Modifier.fillMaxWidth(), fill = C.note) {
+        Text(stringResource(R.string.h_net_away, h.name), style = T.Name)
+        Text(stringResource(R.string.h_away_due, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(due)), ((due - h.now) / MIN + 1).coerceAtLeast(1)), style = T.Small)
+        Bar((h.now - start).toFloat() / app.rustle.domain.Net.LENGTH, C.copper, Modifier.padding(top = 6.dp))
+        Text(stringResource(R.string.h_net_hint), style = T.Small.copy(color = C.muted), modifier = Modifier.padding(top = 6.dp))
     }
 }
 

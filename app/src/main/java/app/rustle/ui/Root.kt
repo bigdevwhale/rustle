@@ -68,6 +68,7 @@ sealed class Overlay {
     data object Maze : Overlay()
     data object Feats : Overlay()
     data object Needs : Overlay()
+    data object Clean : Overlay()
     data class Find(val key: String) : Overlay()
     data class Send(val district: District, val minutes: Int) : Overlay()
 }
@@ -93,6 +94,7 @@ fun RustleRoot(s: State, clock: Long? = null, tab0: Tab = Tab.HOME, overlay0: Ov
     val back by c.back.collectAsStateWithLifecycle()
     val morning by c.morning.collectAsStateWithLifecycle()
     val news by c.news.collectAsStateWithLifecycle()
+    val netBack by c.netBack.collectAsStateWithLifecycle()
     // New achievements and the morning present come up as notes at the top.
     LaunchedEffect(news?.stamp) {
         val n = news ?: return@LaunchedEffect
@@ -126,12 +128,14 @@ fun RustleRoot(s: State, clock: Long? = null, tab0: Tab = Tab.HOME, overlay0: Ov
                 Overlay.Maze -> Maze(h, nav)
                 Overlay.Feats -> app.rustle.ui.home.FeatsPage(h, nav)
                 Overlay.Needs -> app.rustle.ui.home.NeedsSheet(h, nav)
+                Overlay.Clean -> app.rustle.ui.home.CleanScene(h, nav)
                 is Overlay.Find -> FindSheet(h, o.key, nav)
                 is Overlay.Send -> FaceDown(h, o.district, o.minutes, phone, nav)
                 null -> Unit
             }
             back?.let { r -> ReturnSheet(h, r) { c.back.value = null } }
             if (back == null) morning?.let { m -> MorningSheet(h, m) { c.morning.value = null } }
+            if (back == null && morning == null) netBack?.let { n -> app.rustle.ui.home.NetSheet(h, n) { c.netBack.value = null } }
             Notes(Modifier.align(Alignment.TopCenter))
         }
     }

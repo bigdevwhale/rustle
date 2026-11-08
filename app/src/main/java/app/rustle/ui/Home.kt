@@ -28,6 +28,10 @@ class Home(val s: State, val now: Long, val ru: Boolean) {
     val placed: Set<String> = Catalog.placed(s.built, s.place)
     val away = s.trip?.takeIf { it.ended == 0L && !it.over(now) }
     val asleep = s.night?.takeIf { it.ended == 0L }
+    /** When he went into the Net, while he is there (#1). */
+    val surfing: Long? = s.netAt.takeIf { app.rustle.domain.Net.inNet(s, now) }
+    /** A week since the last spring-clean (#1). */
+    val cleanDue = app.rustle.domain.SpringClean.due(s, now)
     val name = s.name.ifBlank { if (ru) "Шуршик" else "Rustle" }
     val days = World.days(s, now)
     /** Whether the window knows a place, and the weather there if it is fresh (three hours). */
@@ -54,7 +58,7 @@ class Home(val s: State, val now: Long, val ru: Boolean) {
     val food = s.inv.mapNotNull { (k, n) -> Catalog.find(k)?.takeIf { it.food > 0 && n > 0 } }.sortedBy { it.food }
 
     fun pose(p: Phone): Pose = when {
-        away != null -> Pose.AWAY
+        away != null || surfing != null -> Pose.AWAY
         asleep != null -> Pose.SLEEP
         p.dizzy(now) -> Pose.DIZZY
         p.low -> Pose.COLD

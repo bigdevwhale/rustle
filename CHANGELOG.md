@@ -6,6 +6,20 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.1.0]
+
+Ideas from a player (#1).
+
+- A weekly spring-clean: a week after the last one the glass gets dusty and he asks to wipe it. Sew a cloth in the workshop from three threads of any colour; he rubs the screen from the inside until it sparkles, the cloth wears through, and he is in a fine mood and sweeps something out of a corner.
+- Trips into the Net: when the phone is on Wi-Fi, once a day, he can pop into the Net for ten minutes and come back with a piece of news of the world – 61 of them, from cat videos to a quarrel over a comma. Nothing is downloaded: the news is his own.
+- Settings › StillCraft: a «Support Rustle» line that opens the StillCraft support page.
+
+<!-- tg
+Раз в неделю Шуршик просит устроить генеральную уборку: тряпочку шьют в мастерской из трёх ниток, а он трёт стекло изнутри, пока не заблестит.
+Когда телефон в вай-фае, Шуршик раз в день может сбегать в Сеть и вернуться с новостями: про котов, погоду и спор из-за запятой.
+В настройках появилась строчка «Поддержать Шуршика» – на дрова для печки и новые вылазки.
+-->
+
 ## [1.0.0]
 
 The first version.

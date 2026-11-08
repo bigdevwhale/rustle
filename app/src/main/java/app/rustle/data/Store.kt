@@ -59,6 +59,7 @@ object Json {
         put("cooked", JSONObject().also { o -> s.cooked.forEach { (k, v) -> o.put(k, v) } })
         put("theme", s.theme); put("hue", s.hue); if (!s.lat.isNaN()) { put("lat", s.lat); put("lon", s.lon) }; put("place", s.placeName)
         put("weatherOn", s.weatherOn); put("locAsked", s.locAsked); put("wx", s.wx); put("temp", s.temp); put("wxAt", s.wxAt); put("dry", s.dryLong); put("requests", JSONObject().also { o -> s.requests.forEach { (k, v) -> o.put(k, v) } })
+        put("cloths", s.cloths); put("cleanAt", s.cleanAt); put("cleans", s.cleans); put("netAt", s.netAt); put("netDay", s.netDay); put("netTrips", s.netTrips)
     }.toString()
 
     private fun JSONObject.map(name: String): Map<String, Long> =
@@ -102,6 +103,7 @@ object Json {
             morningDay = o.optLong("morningDay"), mornings = o.optInt("mornings"), gamesWon = o.optInt("gamesWon"),
             cooked = o.map("cooked").mapValues { it.value.toInt() }, dryLong = o.optInt("dry"), theme = o.optString("theme", "system").ifBlank { "system" }, lat = o.optDouble("lat"), lon = o.optDouble("lon"), placeName = o.optString("place"),
             weatherOn = o.optBoolean("weatherOn", true), locAsked = o.optBoolean("locAsked"), wx = o.optString("wx"), temp = o.optInt("temp", Int.MIN_VALUE), wxAt = o.optLong("wxAt"), hue = o.optString("hue", "GREEN").ifBlank { "GREEN" }, requests = o.map("requests"),
+            cloths = o.optInt("cloths"), cleanAt = o.optLong("cleanAt"), cleans = o.optInt("cleans"), netAt = o.optLong("netAt"), netDay = o.optLong("netDay"), netTrips = o.optInt("netTrips"),
         )
     }
 }
