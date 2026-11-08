@@ -73,4 +73,4 @@
 
 Kotlin и Jetpack Compose. Вся пиксельная графика — домик, существа, находки, иконки — рисуется прямо в коде, без готовых картинок.
 
-Лицензия MIT. Шрифт m6x11 Даниэля Линссена.
+Лицензия MIT. Шрифты: m6x11 Даниэля Линссена; Balsamiq Sans (The Balsamiq Sans Project Authors) и Neucha (Jovanny Lemonad) – по лицензии SIL Open Font License.

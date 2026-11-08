@@ -84,19 +84,25 @@ object C {
 /** m6x11 by Daniel Linssen with Cyrillic by Natto Games (free with attribution). */
 val Pixel = FontFamily(Font(R.font.m6x11, FontWeight.Normal))
 
+/** Balsamiq Sans (SIL OFL): round, drawn by hand, yet easy to read in a sentence. */
+val Hand = FontFamily(Font(R.font.balsamiq_regular, FontWeight.Normal), Font(R.font.balsamiq_bold, FontWeight.Bold))
+
+/** Neucha (SIL OFL): a pencilled note, for what he says himself. */
+val Note = FontFamily(Font(R.font.neucha, FontWeight.Normal))
+
 /**
- * Pixel letters where they carry character — his name, headings, buttons, numbers — and the phone's own
- * plain face for sentences, so tips and descriptions stay easy to read.
+ * Pixel letters where they carry character — his name, headings, buttons, numbers — a round hand-drawn
+ * face for sentences, so tips and descriptions stay easy to read, and a pencilled one for his own words.
  */
 object T {
-    private val Plain = FontFamily.Default
+    private val Plain = Hand
     val Display = TextStyle(fontFamily = Pixel, fontSize = 32.sp, lineHeight = 31.sp, color = C.ink)
     val Title = TextStyle(fontFamily = Pixel, fontSize = 27.sp, lineHeight = 27.sp, color = C.ink)
     val Heading = TextStyle(fontFamily = Pixel, fontSize = 22.sp, lineHeight = 23.sp, color = C.ink)
     /** A short name of a thing in a card: pixel, a touch smaller than a heading. */
     val Name = TextStyle(fontFamily = Pixel, fontSize = 19.sp, lineHeight = 20.sp, color = C.ink)
     val Body = TextStyle(fontFamily = Plain, fontSize = 15.sp, lineHeight = 21.sp, color = C.ink)
-    val Say = TextStyle(fontFamily = Plain, fontSize = 15.sp, lineHeight = 21.sp, color = C.ink)
+    val Say = TextStyle(fontFamily = Note, fontSize = 18.sp, lineHeight = 23.sp, color = C.ink)
     val Small = TextStyle(fontFamily = Plain, fontSize = 13.sp, lineHeight = 18.sp, color = C.muted)
     val Button = TextStyle(fontFamily = Pixel, fontSize = 19.sp, lineHeight = 19.sp)
     val Number = TextStyle(fontFamily = Pixel, fontSize = 48.sp, lineHeight = 46.sp, color = C.copper)

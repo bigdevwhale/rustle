@@ -73,4 +73,4 @@ Everything stays on the phone. No account, no ads, no analytics. The internet is
 
 Kotlin and Jetpack Compose. All the pixel art — the nook, the creatures, the finds, the icons — is drawn in code, with no image files.
 
-MIT licence. Font m6x11 by Daniel Linssen.
+MIT licence. Fonts: m6x11 by Daniel Linssen; Balsamiq Sans (The Balsamiq Sans Project Authors) and Neucha (Jovanny Lemonad), both under the SIL Open Font License.
