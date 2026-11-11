@@ -6,6 +6,18 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.2.0] - 2026-11-11
+
+- All eight kinds drawn anew, each with a shape of its own: the hedgehog in a coat of spines, the lop with long ears and a cotton tail, the moth with fern-like feelers and spotted wings, the foxling with a bushy white-tipped tail, the owlet with a facial disc and folded wings, the kit with a question-mark tail, the flitter on wide webbed wings. Each one also has its own way of curling up to sleep.
+- Fur colours, a colour from a photo, patterns, clothes and every mood still fit every kind: he blinks, beams, gets dizzy and frowns when hungry on the new faces.
+- The sheets were made with image generation through Codex and are cut into sprites by tools/cut.py.
+
+<!-- tg
+Все восемь зверьков нарисованы заново: у ёжика колючая шубка, у лисёнка пушистый хвост, у совёнка мягкие крылья, у мотылька усики-папоротники.
+И у каждого свой сон: кто-то сворачивается клубком, кто-то укрывается крыльями.
+Цвет шерсти, узоры, одёжки и настроения остались на месте и подходят всем.
+-->
+
 ## [1.1.0] - 2026-11-08
 
 Ideas from a player (#1).

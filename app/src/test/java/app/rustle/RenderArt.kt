@@ -82,6 +82,29 @@ class RenderArt {
 
     @Test fun species() = sheet("species", app.rustle.domain.Species.entries.map { Look(it.body, it.accent, species = it) })
 
+    /** Every kind in a row: poses, then other colours, patterns, traits and clothes. */
+    @Test fun kinds() {
+        Art.still = true
+        val cols: List<(app.rustle.domain.Species) -> Pair<Look, Pose>> = listOf(
+            { s -> Look(s.body, s.accent, species = s) to Pose.IDLE },
+            { s -> Look(s.body, s.accent, species = s) to Pose.SLEEP },
+            { s -> Look(s.body, s.accent, species = s) to Pose.WARM },
+            { s -> Look(s.body, s.accent, species = s) to Pose.DIZZY },
+            { s -> Look(s.body, s.accent, species = s) to Pose.COLD },
+            { s -> Look(s.body, s.accent, species = s) to Pose.HUNGRY },
+            { s -> Look(0x7AB8A0, 0xE0F4E8, species = s, marks = app.rustle.domain.Marks.SPOTS) to Pose.IDLE },
+            { s -> Look(0x4A4048, 0xC8B8C0, species = s, marks = app.rustle.domain.Marks.MASK, wear = setOf("scarf", "cap")) to Pose.IDLE },
+            { s -> Look(0xA890C8, 0xF0E4FA, species = s, marks = app.rustle.domain.Marks.STRIPES, wear = setOf("glasses", "tophat", "cape")) to Pose.HOT },
+            { s -> Look(0xD87A5A, 0xF8D8B8, species = s, marks = app.rustle.domain.Marks.SOCKS, wear = setOf("backpack", "bowtie", "crown"), traits = Trait.entries.toSet()) to Pose.SUN },
+            { s -> Look(0x6A88B8, 0xDCE8F8, species = s, marks = app.rustle.domain.Marks.PATCH) to Pose.SLEEP },
+        )
+        val all = app.rustle.domain.Species.entries
+        val b = Buf(cols.size * (Critter.W + 2) + 2, all.size * (Critter.H + 2) + 2)
+        b.d.fill(0xFF1E4A3A.toInt())
+        all.forEachIndexed { r, s -> cols.forEachIndexed { c, f -> val (l, p) = f(s); b.blit(Critter.draw(l, p, 40), 2 + c * (Critter.W + 2), 2 + r * (Critter.H + 2)) } }
+        save(b, "kinds", 3)
+    }
+
     @Test fun marks() = sheet("marks", app.rustle.domain.Marks.entries.map { Look(0xC8946A, 0xF2DCC0, marks = it) } + app.rustle.domain.Marks.entries.take(2).map { Look(0x8A8A92, 0xE8E8EE, species = app.rustle.domain.Species.CAT, marks = it) })
 
     @Test fun wear() = sheet("wear", app.rustle.domain.Catalog.builds.filter { it.kind == app.rustle.domain.Kind.WEAR }.map { Look(0xC8946A, 0xF2DCC0, wear = setOf(it.key)) })
