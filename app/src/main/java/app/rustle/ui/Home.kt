@@ -44,7 +44,7 @@ class Home(val s: State, val now: Long, val ru: Boolean) {
      * sun really is there, so dusk in the window comes with the real sunset.
      */
     val hour: Float = run {
-        if (app.rustle.BuildConfig.SHOTS) return@run 19.2f
+        if (app.rustle.BuildConfig.SHOTS) return@run if (app.rustle.BuildConfig.EVENING) 21.5f else 19.2f
         val clock = Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).let { it.hour + it.minute / 60f }
         if (!placed_) return@run clock
         val alt = app.rustle.domain.Sky.sunAlt(now, s.lat, s.lon)
@@ -64,8 +64,9 @@ class Home(val s: State, val now: Long, val ru: Boolean) {
         p.low -> Pose.COLD
         p.hot -> Pose.HOT
         full < 20 -> Pose.HUNGRY
-        p.dark -> Pose.DARK
-        p.sunny -> Pose.SUN
+        // Screenshots don't follow the light on the desk.
+        p.dark && !app.rustle.BuildConfig.SHOTS -> Pose.DARK
+        p.sunny && !app.rustle.BuildConfig.SHOTS -> Pose.SUN
         p.charging -> Pose.WARM
         else -> Pose.IDLE
     }

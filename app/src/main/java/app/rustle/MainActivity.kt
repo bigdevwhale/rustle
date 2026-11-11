@@ -17,6 +17,15 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 
 class MainActivity : AppCompatActivity() {
+    // Screenshots show the app alone, without the phone's bars.
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (BuildConfig.SHOTS && hasFocus) androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).run {
+            systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (BuildConfig.SHOTS) Art.still = true
@@ -26,7 +35,7 @@ class MainActivity : AppCompatActivity() {
             val s: State? by container.store.state.collectAsStateWithLifecycle(initialValue = null)
             val seeding by container.seeding.collectAsStateWithLifecycle()
             val system = isSystemInDarkTheme()
-            val dark = when (s?.theme) { "dark" -> true; "light" -> false; else -> system }
+            val dark = if (BuildConfig.SHOTS) true else when (s?.theme) { "dark" -> true; "light" -> false; else -> system }
             C.pal = Hue.of(s?.hue ?: "GREEN").palette(dark)
             // Light backgrounds want dark status bar icons, and the other way round.
             LaunchedEffect(dark) {

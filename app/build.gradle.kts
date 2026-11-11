@@ -26,6 +26,8 @@ android {
         buildConfigField("boolean", "DEMO", demo.toString())
         // Screenshots want a still screen: no blinking, no drifting dust.
         buildConfigField("boolean", "SHOTS", project.hasProperty("shots").toString())
+        // `-Pevening` (with -Pshots): the nook after seven, with the bed tile, whatever the phone's clock says.
+        buildConfigField("boolean", "EVENING", project.hasProperty("evening").toString())
         // `-Plang=en` makes a screenshot build start in that language (old Androids can't switch per app from adb).
         buildConfigField("String", "LANG", "\"" + (project.findProperty("lang") ?: "") + "\"")
         if (demo) applicationIdSuffix = if (project.hasProperty("shots")) ".shots" else ".demo"

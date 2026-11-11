@@ -127,7 +127,7 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
                 }
                 h.surfing != null -> NetAway(h, h.surfing)
                 away == null -> {
-                    val bed = Nights.bedtime(h.now)
+                    val bed = Nights.bedtime(h.now) || app.rustle.BuildConfig.EVENING
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Tile(Icons.bowl, stringResource(R.string.h_feed), Modifier.weight(1f)) { nav.go(Overlay.Feed) }
                         Tile(Icons.pack, stringResource(R.string.h_send), Modifier.weight(1f), C.copper) { nav.tab(Tab.TRIPS) }

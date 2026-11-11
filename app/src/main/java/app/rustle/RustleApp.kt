@@ -380,4 +380,5 @@ class RustleApp : Application() {
 
 val Context.container: AppContainer get() = (applicationContext as RustleApp).container
 
-val Context.ru: Boolean get() = resources.configuration.locales[0].language == "ru"
+// A screenshot build started in a language (`-Plang`) keeps to it whatever the phone speaks.
+val Context.ru: Boolean get() = if (BuildConfig.LANG.isNotEmpty()) BuildConfig.LANG == "ru" else resources.configuration.locales[0].language == "ru"
