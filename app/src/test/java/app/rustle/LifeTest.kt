@@ -93,6 +93,31 @@ class LifeTest {
         assertEquals(Grade.BAD, Nights.grade(n.copy(peekMs = 40 * MIN), 7 * HOUR))
     }
 
+    /** Scrolling in bed after "to bed" doesn't spoil the night; he falls asleep once the phone is put down (#7). */
+    @Test fun nightStartsWhenThePhoneIsPutDown() {
+        val bed = 22 * HOUR
+        var n = Night(bed, true, unlockAt = bed)
+        // Forty minutes of the phone before sleep: off for a moment, on again, then put down for good.
+        n = Nights.screenOff(n, bed + 20 * MIN)
+        n = Nights.unlocked(n, bed + 22 * MIN)
+        n = Nights.screenOff(n, bed + 40 * MIN)
+        assertEquals(0L, n.peekMs)
+        n = Nights.settle(n, bed + 60 * MIN)
+        assertEquals(bed + 40 * MIN, n.settled)
+        // A glance at the clock in the night counts; the morning unlock ends it.
+        n = Nights.unlocked(n, bed + 4 * HOUR)
+        n = Nights.screenOff(n, bed + 4 * HOUR + 2 * MIN)
+        assertEquals(2 * MIN, n.peekMs)
+        assertEquals(Grade.GOOD, Nights.grade(n, bed + 7 * HOUR))
+        assertTrue(Nights.hours(n, bed + 7 * HOUR) in 6.3f..6.4f)
+    }
+
+    /** A night where the phone was never seen put down (the watcher was stopped) still counts from bedtime. */
+    @Test fun nightWithoutScreenEvents() {
+        val n = Night(0, true)
+        assertEquals(Grade.GOOD, Nights.grade(n, 7 * HOUR))
+    }
+
     @Test fun claimPutsFindsAway() {
         val t = Trip(District.PORT, 1_000_000, 30)
         val (s, finds) = World.claim(State(), t, t.due + 5 * MIN, 0)

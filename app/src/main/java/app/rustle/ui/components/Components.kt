@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
@@ -162,6 +163,34 @@ fun Chip(text: String, on: Boolean, onClick: () -> Unit, modifier: Modifier = Mo
     val ink = when { on && color != null -> C.paper; on -> C.ink; dark -> C.text; else -> C.ink }
     Text(text, style = T.Small.copy(color = ink), maxLines = 1,
         modifier = modifier.pixelBox(fill, bevel = null, lip = null).clickable(onClick = onClick).padding(horizontal = 10.dp, vertical = 7.dp))
+}
+
+/**
+ * Equal cells laid out [columns] to a row across the full width: every choice in view at once, none cut off
+ * and nothing to swipe. [cell] draws one cell into the modifier it is given.
+ */
+@Composable
+fun Cells(count: Int, columns: Int, modifier: Modifier = Modifier, gap: Dp = 6.dp, cell: @Composable (Int, Modifier) -> Unit) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(gap)) {
+        for (r in 0 until (count + columns - 1) / columns) Row(Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(gap)) {
+            for (c in 0 until columns) {
+                val i = r * columns + c
+                if (i < count) cell(i, Modifier.weight(1f).fillMaxHeight()) else Box(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+/** A choice as an equal cell: the label centred, a count on a small plate when there is one. */
+@Composable
+fun SegChip(text: String, on: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, count: Int = 0) {
+    Row(modifier.pixelBox(if (on) C.copper else C.boardL, bevel = null, lip = null).clickable(onClick = onClick).padding(horizontal = 4.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        Text(text, style = T.Small.copy(color = if (on) C.ink else C.text), maxLines = 1, textAlign = TextAlign.Center,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Visible)
+        if (count > 0) Text("$count", style = T.Small.copy(color = C.paper, fontSize = 11.sp), maxLines = 1,
+            modifier = Modifier.padding(start = 4.dp).background(C.ember, androidx.compose.foundation.shape.RoundedCornerShape(8.dp)).padding(horizontal = 5.dp))
+    }
 }
 
 /** A small plate with a label. */

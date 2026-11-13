@@ -67,9 +67,18 @@ object Nook {
 
     private var bg: Buf? = null
 
-    /** The wall, the beam and the floor never change: drawn once. */
+    /**
+     * The wall, the beam and the floor never change: drawn once. They come from the room drawn with image
+     * generation ("room" atlas, tools/art.py), band by band; the port hatch in the floor goes on top. Without
+     * the atlas they are drawn here.
+     */
     private fun background(): Buf = bg ?: Buf(W, H).also { b ->
-        wall(b); beam(b); wainscot(b); floor(b)
+        val bands = listOf("beam" to 0, "wall" to 15, "skirting" to FLOOR - 24, "floor" to FLOOR).map { (k, y) -> Atlas.get("room", k) to y }
+        if (bands.all { it.first != null }) {
+            for ((band, y) in bands) b.blit(band!!, 0, y)
+            b.rect(0, FLOOR, W, 1, rgb(0x2A160C))
+            hatch(b)
+        } else { wall(b); beam(b); wainscot(b); floor(b) }
         bg = b
     }
 
@@ -155,7 +164,11 @@ object Nook {
             y += h; h += 1; row++
         }
         b.rect(0, FLOOR, W, 1, rgb(0x2A160C))
-        // The port hatch: a brass-rimmed slot in the floor with contacts inside.
+        hatch(b)
+    }
+
+    /** The port hatch: a brass-rimmed slot in the floor with contacts inside. */
+    private fun hatch(b: Buf) {
         val hx = 70; val hy = H - 18
         b.block(hx, hy, 52, 12, BRASS, 3)
         b.rect(hx + 3, hy + 3, 46, 6, rgb(0x0E0C12)); b.rect(hx + 6, hy + 5, 40, 2, rgb(0x2A2A34))
@@ -171,6 +184,22 @@ object Nook {
         s.pose == Pose.SUN -> 96
         s.pose == Pose.IDLE && !Art.still -> 76 + (14 * sin(tick / 240.0)).roundToInt()
         else -> 74
+    }
+
+    /**
+     * Whether the point (x, y) in scene pixels is on him as he stands at [tick]: his drawn pixels, with a few
+     * pixels' grace round them so a finger finds him easily. Taps anywhere else in the nook leave him be.
+     */
+    fun onHim(s: NookScene, tick: Int, x: Float, y: Float): Boolean {
+        val left = spot(s, tick)
+        if (left < 0) return false
+        val inBed = s.pose == Pose.SLEEP && "bed" in s.built
+        val top = if (inBed) FLOOR - 58 else FLOOR - 42
+        val fig = Critter.draw(s.look, s.pose, tick, lying = inBed)
+        val px = (x - left).toInt(); val py = (y - top).toInt()
+        val grace = 3
+        for (dy in -grace..grace) for (dx in -grace..grace) if (fig.filled(px + dx, py + dy)) return true
+        return false
     }
 
     /** Drawn from the app and from the widget; the light map and background are shared, so one at a time. */

@@ -42,7 +42,20 @@ fun FeedSheet(h: Home, nav: Nav) {
     Sheet(nav::close) {
         Text(stringResource(R.string.feed_title), style = T.Title)
         Text(stringResource(R.string.feed_sub, h.full.toInt()), style = T.Small)
-        if (h.food.isEmpty()) {
+        // Dishes put by in the pantry come first: they fill him most (#3).
+        for ((k, n) in h.s.larder) {
+            val d = Catalog.dishes.firstOrNull { it.key == k } ?: continue
+            Panel(Modifier.fillMaxWidth(), fill = C.note, onClick = { c.write { eat(d) } }) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(d.name.of(h.ru), style = T.Name)
+                        Text(stringResource(R.string.feed_dish, d.full, d.mood), style = T.Small)
+                    }
+                    Text("×$n", style = T.Heading.copy(color = C.copperD))
+                }
+            }
+        }
+        if (h.food.isEmpty() && h.s.larder.isEmpty()) {
             Says(stringResource(R.string.feed_empty), who = h.name)
             PixelButton(stringResource(R.string.h_send), { nav.tab(Tab.TRIPS) }, Modifier.fillMaxWidth())
         }

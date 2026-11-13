@@ -71,6 +71,6 @@
 ./gradlew testDebugUnitTest -Prender --tests '*RenderArt*'   # картинки сцены и персонажей в app/build/art
 ```
 
-Kotlin и Jetpack Compose. Вся пиксельная графика — домик, существа, находки, иконки — рисуется прямо в коде, без готовых картинок.
+Kotlin и Jetpack Compose. Зверьки, находки, иконки, места для вылазок и стены домика нарисованы генерацией картинок через Codex (`tools/gen.py`) и ужаты в спрайты (`tools/cut.py`, `tools/art.py`); мебель, огонь, небо в окне и свет рисуются в коде.
 
 Лицензия MIT. Шрифты: m6x11 Даниэля Линссена; Balsamiq Sans (The Balsamiq Sans Project Authors) и Neucha (Jovanny Lemonad) – по лицензии SIL Open Font License.

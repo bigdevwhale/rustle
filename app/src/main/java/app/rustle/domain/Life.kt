@@ -93,14 +93,45 @@ object Nights {
     /** He wakes up on the first unlock after this hour, if he has slept at least [MIN_SLEEP]. */
     const val WAKE_HOUR = 5
     const val MIN_SLEEP = 4 * HOUR
+    /** A quarter of an hour with the screen dark and he is asleep: what came before was the phone before bed. */
+    const val SETTLE = 15 * MIN
+
+    /** Marks him asleep once the screen has been dark for [SETTLE]. */
+    fun settle(n: Night, now: Long): Night = if (n.settled == 0L && n.downAt > 0 && now - n.downAt >= SETTLE) n.copy(settled = n.downAt) else n
+
+    /** When he fell asleep: the start of the first quiet spell, or bedtime if the phone was never seen put down. */
+    fun asleepFrom(n: Night, now: Long): Long = settle(n, now).settled.takeIf { it > 0 } ?: n.start
+
+    /** The screen went dark. Before he is asleep it only starts the quiet spell; after, it closes an unlock. */
+    fun screenOff(n: Night, now: Long): Night = when {
+        n.settled == 0L -> n.copy(downAt = now, unlockAt = 0)
+        n.unlockAt > 0 -> n.copy(peekMs = n.peekMs + (now - n.unlockAt), unlockAt = 0)
+        else -> n
+    }
+
+    /** The phone was unlocked. Before he is asleep it costs nothing: the quiet spell starts over. */
+    fun unlocked(n: Night, now: Long): Night {
+        val m = settle(n, now)
+        return if (m.settled == 0L) m.copy(downAt = 0, unlockAt = now) else m.copy(unlockAt = if (m.unlockAt == 0L) now else m.unlockAt)
+    }
+
+    /** The first unlock of the morning, after enough sleep, wakes him up. */
+    fun morning(n: Night, now: Long): Boolean {
+        val m = settle(n, now)
+        return m.settled > 0 && now - m.settled >= MIN_SLEEP && hourOf(now) in WAKE_HOUR..13
+    }
+
+    fun hours(n: Night, end: Long): Float = (end - asleepFrom(n, end)).coerceAtLeast(0) / HOUR.toFloat()
+
+    /** Minutes the screen was on while he slept. */
+    fun peekMin(n: Night): Int = (n.peekMs / MIN).toInt()
 
     fun grade(n: Night, end: Long): Grade {
-        val hours = (end - n.start) / HOUR.toDouble()
-        // Two minutes to put the phone down after "to bed".
-        val peek = (n.peekMs - 2 * MIN).coerceAtLeast(0) / MIN
+        val hours = hours(n, end)
+        val peek = peekMin(n)
         return when {
-            hours >= 6 && peek <= 5 -> Grade.GOOD
-            hours >= 4.5 && peek <= 20 -> Grade.OK
+            hours >= 5.5 && peek <= 10 -> Grade.GOOD
+            hours >= 4 && peek <= 30 -> Grade.OK
             else -> Grade.BAD
         }
     }

@@ -71,6 +71,6 @@ Everything stays on the phone. No account, no ads, no analytics. The internet is
 ./gradlew testDebugUnitTest -Prender --tests '*RenderArt*'   # scene and creature pictures in app/build/art
 ```
 
-Kotlin and Jetpack Compose. All the pixel art — the nook, the creatures, the finds, the icons — is drawn in code, with no image files.
+Kotlin and Jetpack Compose. The creatures, the finds, the icons, the outing places and the nook's walls are drawn with image generation through Codex (`tools/gen.py`) and shrunk into sprites (`tools/cut.py`, `tools/art.py`); the furniture, the fire, the sky in the window and the light are drawn in code.
 
 MIT licence. Fonts: m6x11 by Daniel Linssen; Balsamiq Sans (The Balsamiq Sans Project Authors) and Neucha (Jovanny Lemonad), both under the SIL Open Font License.

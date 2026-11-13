@@ -24,12 +24,27 @@ data class Trip(
     val due: Long get() = if (minutes > 0) start + minutes * MIN else 0
     fun over(now: Long) = ended > 0 || (minutes > 0 && now >= due)
     fun endAt(now: Long) = when { ended > 0 -> ended; minutes > 0 && now >= due -> due; else -> now }
-    /** Unlocked time he lets pass before turning back: a tenth of the way, at least two minutes, plus a minute to put the phone down. */
-    val allowance: Long get() = maxOf(2 * MIN, minutes * MIN / 10) + MIN
+    /** Unlocked time he lets pass before turning back: a tenth of the way, at least two minutes, plus three to put the phone down. */
+    val allowance: Long get() = maxOf(2 * MIN, minutes * MIN / 10) + 3 * MIN
+
+    /** Unlocked time so far, counting the unlock going on now. */
+    fun peek(now: Long) = peekMs + if (unlockAt > 0) now - unlockAt else 0
 }
 
-/** A night on the stove: from "to bed" to the first unlock of the morning. */
-data class Night(val start: Long, val charging: Boolean, val peekMs: Long = 0, val unlockAt: Long = 0, val ended: Long = 0)
+/**
+ * A night on the stove: from "to bed" to the first unlock of the morning. He falls asleep once the phone is put
+ * down: [downAt] is when the screen last went dark before that, and [settled] when the first quiet spell of
+ * [app.rustle.domain.Nights.SETTLE] began (0 until then). Unlocked time only counts against the night after it (#7).
+ */
+data class Night(
+    val start: Long,
+    val charging: Boolean,
+    val peekMs: Long = 0,
+    val unlockAt: Long = 0,
+    val ended: Long = 0,
+    val downAt: Long = 0,
+    val settled: Long = 0,
+)
 
 data class TripLog(val at: Long, val district: District, val minutes: Int, val cut: Boolean, val finds: List<String>, val line: Int)
 
@@ -106,4 +121,9 @@ data class State(
     val netAt: Long = 0,
     val netDay: Long = 0,
     val netTrips: Int = 0,
+    /** The place and length last chosen on the outings screen: the widget sends him there (#4). */
+    val pickD: String = "",
+    val pickMin: Int = -1,
+    /** Dishes cooked ahead and put by in the pantry, by key (#3). */
+    val larder: Map<String, Int> = emptyMap(),
 )

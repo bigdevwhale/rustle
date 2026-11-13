@@ -3,7 +3,6 @@ package app.rustle
 import android.app.Application
 import android.content.Context
 import app.rustle.data.DemoSeed
-import app.rustle.data.HOUR
 import app.rustle.data.MIN
 import app.rustle.data.Night
 import app.rustle.data.NightLog
@@ -92,11 +91,25 @@ class AppContainer(context: Context) {
         }
     }
 
-    suspend fun cook(d: Dish) {
+    /** Cooks a dish: he eats it at once, or with [keep] it goes into the pantry for later (#3). */
+    suspend fun cook(d: Dish, keep: Boolean = false) {
         val now = System.currentTimeMillis()
         store.update { s ->
             if (!Catalog.canPay(s.inv, d.cost)) s
-            else Needs.feed(s, now, d.full, d.mood).copy(inv = Catalog.pay(s.inv, d.cost), dishes = s.dishes + 1, cooked = s.cooked + (d.key to (s.cooked[d.key] ?: 0) + 1)).cared(now)
+            else {
+                val made = s.copy(inv = Catalog.pay(s.inv, d.cost), dishes = s.dishes + 1, cooked = s.cooked + (d.key to (s.cooked[d.key] ?: 0) + 1))
+                if (keep) made.copy(larder = made.larder + (d.key to (made.larder[d.key] ?: 0) + 1)).cared(now)
+                else Needs.feed(made, now, d.full, d.mood).cared(now)
+            }
+        }
+    }
+
+    /** A dish from the pantry. */
+    suspend fun eat(d: Dish) {
+        val now = System.currentTimeMillis()
+        store.update { s ->
+            val n = s.larder[d.key] ?: 0
+            if (n <= 0) s else Needs.feed(s, now, d.full, d.mood).copy(larder = (s.larder + (d.key to n - 1)).filterValues { it > 0 }).cared(now)
         }
     }
 
@@ -176,7 +189,7 @@ class AppContainer(context: Context) {
             Outing.stop(app)
             return
         }
-        store.update { s -> s.night?.let { s.copy(night = it.copy(ended = if (it.ended > 0) it.ended else now)) } ?: s }
+        store.update { s -> s.night?.let { s.copy(night = if (it.ended > 0) it else Nights.settle(it, now).copy(ended = now)) } ?: s }
         claimMorning()
     }
 
@@ -188,8 +201,8 @@ class AppContainer(context: Context) {
             if (n.ended == 0L) return@update s
             val g = Nights.grade(n, n.ended)
             val find = Nights.dreamFind(g, World.open(s), n.start)
-            val hours = (n.ended - n.start) / HOUR.toFloat()
-            val peek = ((n.peekMs - 2 * MIN).coerceAtLeast(0) / MIN).toInt()
+            val hours = Nights.hours(n, n.ended)
+            val peek = Nights.peekMin(n)
             val line = Random.nextInt(2)
             got = Morning(g, hours, peek, find, line)
             var inv = s.inv

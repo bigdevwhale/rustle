@@ -67,7 +67,7 @@ class RenderArt {
         b.d.fill(0xFFF3E8CF.toInt())
         all.forEachIndexed { i, f -> b.blit(app.rustle.ui.art.Items.of(f), 2 + (i % cols) * n, 2 + (i / cols) * n) }
         val I = app.rustle.ui.art.Icons
-        listOf(I.bowl, I.bundle, I.maze, I.moon, I.sun, I.home, I.heart(true), I.heart(false), I.crumb(true), I.crumb(false)).forEachIndexed { i, ic -> b.blit(ic, 2 + i * n, b.h - n) }
+        listOf(I.bowl, I.pack, I.chest, I.tools, I.maze, I.moon, I.sun, I.home, I.heart(true), I.heart(false), I.crumb(true), I.crumb(false)).forEachIndexed { i, ic -> b.blit(ic, 2 + i * n, b.h - n) }
         save(b, "items", 5)
     }
 
@@ -120,6 +120,57 @@ class RenderArt {
         scene("wx_snow", 12f, wx = app.rustle.domain.Wx.SNOW)
         scene("wx_fog", 10f, wx = app.rustle.domain.Wx.FOG)
         scene("wx_storm", 22.5f, wx = app.rustle.domain.Wx.STORM)
+    }
+
+    /** Each kind at home: by day, walking, and asleep in bed, as the app shows them. */
+    @Test fun atHome() {
+        Art.still = true
+        val kinds = app.rustle.domain.Species.entries
+        val b = Buf(Nook.W * 3, Nook.H * kinds.size)
+        val one = Buf(Nook.W, Nook.H)
+        kinds.forEachIndexed { r, sp ->
+            val l = Look(sp.body, sp.accent, species = sp, wear = setOf("scarf"))
+            listOf(Pose.IDLE to 13f, Pose.WARM to 20f, Pose.SLEEP to 1f).forEachIndexed { c, (p, hr) ->
+                Nook.draw(one, NookScene(l, p, 70, true, hr, false, false, false, all, listOf("key_diary"), 10), 40)
+                b.blit(one, c * Nook.W, r * Nook.H)
+            }
+        }
+        save(b, "athome", 2)
+    }
+
+    /** Every kind moving: breathing, steps and the jump when stroked, frame by frame. */
+    @Test fun frames() {
+        Art.still = false
+        val kinds = app.rustle.domain.Species.entries
+        val ticks = listOf(0, 11, 22, 33, 47, 66, 90, 120)
+        val b = Buf(ticks.size * 2 * (Critter.W + 2), kinds.size * (Critter.H + 2))
+        b.d.fill(0xFF1E4A3A.toInt())
+        kinds.forEachIndexed { r, sp ->
+            val l = Look(sp.body, sp.accent, species = sp)
+            ticks.forEachIndexed { i, t ->
+                b.blit(Critter.draw(l, Pose.IDLE, t, step = if (i % 2 == 0) 1 else -1), (2 * i) * (Critter.W + 2), r * (Critter.H + 2))
+                b.blit(Critter.draw(l, Pose.IDLE, t, petted = true, squash = listOf(-.12, -.06, .07, .14)[i % 4]), (2 * i + 1) * (Critter.W + 2), r * (Critter.H + 2))
+            }
+        }
+        Art.still = true
+        save(b, "frames", 2)
+    }
+
+    /** Tick after tick on the home screen, the way it moves: for catching seams and wear that lags behind. */
+    @Test fun walk() {
+        Art.still = false
+        val l = Look(app.rustle.domain.Species.OWL.body, app.rustle.domain.Species.OWL.accent, species = app.rustle.domain.Species.OWL, wear = setOf("tophat", "scarf"))
+        val one = Buf(Nook.W, Nook.H)
+        val ticks = (0 until 48).map { 300 + it * 3 }
+        val cw = 64; val ch = 56
+        val b = Buf(cw * 8, ch * 6)
+        ticks.forEachIndexed { i, t ->
+            Nook.draw(one, NookScene(l, Pose.IDLE, 70, true, 13f, false, false, false, all, listOf("key_diary"), 10), t)
+            val x0 = Nook.spot(NookScene(l, Pose.IDLE, 70, true, 13f, false, false, false, all, emptyList(), 10), t) - 8
+            for (y in 0 until ch) for (x in 0 until cw) b.d[(i / 8 * ch + y) * b.w + i % 8 * cw + x] = one.get(x0 + x, Nook.FLOOR - 50 + y)
+        }
+        Art.still = true
+        save(b, "walk", 4)
     }
 
     @Test fun critter() {

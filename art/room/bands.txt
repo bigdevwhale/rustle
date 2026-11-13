@@ -1,0 +1,5 @@
+# The bands of art/room/room.png as shares of its height, picked by eye (tools/art.py).
+beam 0.0 0.068
+wall 0.068 0.612
+skirting 0.612 0.706
+floor 0.706 1.0

@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +26,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -90,8 +94,11 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
         else -> Lines.say.getValue(pose).let { it[((h.now / (3 * MIN)) % it.size).toInt()].of(h.ru) }
     }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-        Box(Modifier.fillMaxWidth().background(C.boardD).pointerInput(pose) {
-            detectTapGestures {
+        Box(Modifier.fillMaxWidth().background(C.boardD).pointerInput(scene) {
+            detectTapGestures { at ->
+                // Only a tap on him counts: the scene is the nook scaled to the full width.
+                val k = size.width / Nook.W.toFloat()
+                if (!Nook.onHim(scene, lastTick, at.x / k, at.y / k)) return@detectTapGestures
                 when (pose) {
                     Pose.AWAY -> Unit
                     Pose.SLEEP -> hush++
@@ -103,7 +110,7 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
             if (line != null) Bubble(line, Modifier.align(Alignment.TopCenter).padding(start = 12.dp, end = 12.dp, top = 30.dp))
             StoveChip(phone, Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp))
         }
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Tip("home", stringResource(R.string.tip_home_t), stringResource(R.string.tip_home), h.look, h.s.tips)
             if (h.s.weatherOn && !h.s.locAsked && h.s.lat.isNaN() && "home" in h.s.tips) WeatherCard()
             if (away != null) Panel(Modifier.fillMaxWidth(), fill = C.note) {
@@ -113,12 +120,18 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
                     Text(stringResource(R.string.h_away_due, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(away.due)), left), style = T.Small)
                     Bar((h.now - away.start).toFloat() / (away.minutes * MIN), C.copper, Modifier.padding(top = 6.dp))
                 } else Text(stringResource(R.string.h_away_free), style = T.Small)
-                Text(stringResource(R.string.h_away_hint), style = T.Small.copy(color = C.muted), modifier = Modifier.padding(top = 6.dp))
+                // While the screen is on, how long before he turns back (#2).
+                if (away.minutes > 0 && away.unlockAt > 0) {
+                    val left = ((away.allowance - away.peek(h.now)) / MIN + 1).coerceAtLeast(1)
+                    Text(stringResource(R.string.h_away_peek, left), style = T.Small.copy(color = C.emberD), modifier = Modifier.padding(top = 6.dp))
+                } else Text(stringResource(R.string.h_away_hint), style = T.Small.copy(color = C.muted), modifier = Modifier.padding(top = 6.dp))
                 PixelButton(stringResource(R.string.h_call_home), { c.write { callHome() } }, Modifier.fillMaxWidth().padding(top = 8.dp), kind = Kind.PALE, small = true)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Pips(stringResource(R.string.h_full), h.full, { Icons.crumb(it) }, Modifier.weight(1f).clickable { nav.go(Overlay.Needs) })
-                Pips(stringResource(R.string.h_mood), h.mood, { Icons.heart(it) }, Modifier.weight(1f).clickable { nav.go(Overlay.Needs) })
+                Pips(stringResource(R.string.h_full), h.full, { Icons.crumb(it) }, Modifier.weight(1f).clickable { nav.go(Overlay.Needs) },
+                    low = stringResource(R.string.h_full_low).takeIf { h.full <= app.rustle.domain.Loot.HUNGRY })
+                Pips(stringResource(R.string.h_mood), h.mood, { Icons.heart(it) }, Modifier.weight(1f).clickable { nav.go(Overlay.Needs) },
+                    low = stringResource(R.string.h_mood_low).takeIf { h.mood <= app.rustle.domain.Loot.GLUM })
             }
             when {
                 asleep != null -> {
@@ -136,12 +149,11 @@ fun HomeScreen(h: Home, phone: Phone, nav: Nav) {
                     }
                     if (bed && !phone.charging) Text(stringResource(R.string.h_bed_hint), style = T.Small.copy(color = C.textDim))
                     if (h.s.trips.isEmpty()) Text(stringResource(R.string.h_first), style = T.Small.copy(color = C.textDim))
-                    if (h.cleanDue) CleanCard(h, nav)
-                    if (app.rustle.domain.Net.canGo(h.s, h.now, phone.wifi)) NetCard(h, phone)
-                    Goal(h, nav)
                 }
             }
-            Asks(h)
+            // Everything else waits on small plates in one row; each opens its own sheet, so the home screen
+            // fits without scrolling.
+            Errands(h, phone, nav)
             Box(Modifier.height(4.dp))
         }
     }
@@ -169,9 +181,14 @@ private fun StoveChip(p: Phone, modifier: Modifier) {
 
 /** A need as five pictograms that fill up. */
 @Composable
-private fun Pips(label: String, value: Double, icon: (Boolean) -> Buf, modifier: Modifier) {
-    Column(modifier.pixelBox(C.boardD, outline = C.night, bevel = null, lip = null).padding(horizontal = 8.dp, vertical = 6.dp)) {
-        Text(label, style = T.Small.copy(color = C.textDim))
+private fun Pips(label: String, value: Double, icon: (Boolean) -> Buf, modifier: Modifier, low: String? = null) {
+    Column(modifier.pixelBox(C.boardD, outline = C.night, bevel = null, lip = null).padding(horizontal = 8.dp, vertical = 6.dp)
+        .semantics(mergeDescendants = true) { contentDescription = "$label ${value.toInt()}/100" + (low?.let { ", $it" } ?: "") }) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(label, style = T.Small.copy(color = C.textDim), modifier = Modifier.weight(1f), maxLines = 1)
+            // Running low: said in words too, not only by empty pips.
+            if (low != null) Text(low, style = T.Small.copy(color = C.emberL), maxLines = 1)
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             val n = ((value + 10) / 20).toInt().coerceIn(0, 5)
             for (i in 0 until 5) BufImage(icon(i < n), scale = 1.dp)
@@ -186,11 +203,54 @@ private fun Tile(icon: Buf, label: String, modifier: Modifier, fill: Color = C.p
     val pressed by interaction.collectIsPressedAsState()
     Column(
         modifier.offset { IntOffset(0, if (pressed) PX.roundToPx() else 0) }.pixelBox(fill, pressed = pressed, lip = if (fill == C.copper) C.copperD else C.paperD)
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick).padding(vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp),
+            .clickable(interactionSource = interaction, indication = null, onClick = onClick).padding(vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        BufImage(icon, scale = 2.dp)
-        Text(label, style = T.Button.copy(color = C.ink, fontSize = 16.sp), textAlign = TextAlign.Center, maxLines = 1)
+        BufImage(icon, scale = 1.5.dp)
+        Text(label, style = T.Button.copy(color = C.ink, fontSize = 15.sp), textAlign = TextAlign.Center, maxLines = 1)
+    }
+}
+
+/** The plates under the actions: this week's requests, the spring-clean, the Net, what to make next. */
+@Composable
+private fun Errands(h: Home, phone: Phone, nav: Nav) {
+    val plates = mutableListOf<@Composable (Modifier) -> Unit>()
+    val week = app.rustle.domain.Requests.week(app.rustle.domain.World.dayOf(h.now))
+    val since = app.rustle.domain.Requests.start(week)
+    val asks = app.rustle.domain.Requests.of(h.s, h.now)
+    val open = asks.count { it.key !in h.s.requests }
+    val ready = asks.count { it.key !in h.s.requests && it.progress(h.s, since) >= it.goal }
+    if (open > 0) plates += { m -> Errand(stringResource(R.string.e_asks), if (ready > 0) stringResource(R.string.e_ready, ready) else stringResource(R.string.e_left, open), ready > 0, m) { nav.go(Overlay.Card("asks")) } }
+    val idle = h.away == null && h.asleep == null && h.surfing == null
+    if (idle && h.cleanDue) plates += { m -> Errand(stringResource(R.string.e_clean), stringResource(if (h.s.cloths > 0) R.string.e_clean_go else R.string.e_clean_cloth), h.s.cloths > 0, m) {
+        if (h.s.cloths > 0) nav.go(Overlay.Clean) else nav.go(Overlay.Card("clean")) } }
+    if (idle && app.rustle.domain.Net.canGo(h.s, h.now, phone.wifi)) plates += { m -> Errand(stringResource(R.string.e_net), stringResource(R.string.e_net_go, app.rustle.domain.Net.MINUTES), true, m) { nav.go(Overlay.Card("net")) } }
+    val goal = Catalog.builds.firstOrNull { it.kind == app.rustle.domain.Kind.TOOL && it.key !in h.s.built } ?: Catalog.builds.firstOrNull { it.key !in h.s.built }
+    if (goal != null) plates += { m -> Errand(stringResource(R.string.e_make), goal.name.of(h.ru), Catalog.canPay(h.s.inv, goal.cost), m) { nav.go(Overlay.Card("goal")) } }
+    if (plates.isEmpty()) return
+    // One row of equal plates across the width, all in view (there are four at most).
+    app.rustle.ui.components.Cells(plates.size, plates.size) { i, m -> plates[i](m) }
+}
+
+/** One plate: what it is, the state of it, lit up when something can be done now. */
+@Composable
+private fun Errand(title: String, note: String, hot: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Panel(modifier, fill = if (hot) C.copperL else C.paper, onClick = onClick, padding = androidx.compose.foundation.layout.PaddingValues(horizontal = 6.dp, vertical = 6.dp)) {
+        Text(title, style = T.Name.copy(fontSize = 14.sp), maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Text(note, style = T.Small.copy(color = if (hot) C.emberD else C.muted, fontSize = 12.sp), maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    }
+}
+
+/** The sheet behind a plate. */
+@Composable
+fun HomeCardSheet(h: Home, phone: Phone, which: String, nav: Nav) {
+    app.rustle.ui.components.Sheet(nav::close) {
+        when (which) {
+            "asks" -> Asks(h)
+            "clean" -> CleanCard(h, nav)
+            "net" -> NetCard(h, phone) { nav.close() }
+            "goal" -> Goal(h, nav)
+        }
     }
 }
 
@@ -269,7 +329,7 @@ private fun CleanCard(h: Home, nav: Nav) {
 
 /** On Wi-Fi, once a day, he may pop into the Net (#1). */
 @Composable
-private fun NetCard(h: Home, phone: Phone) {
+private fun NetCard(h: Home, phone: Phone, done: () -> Unit = {}) {
     val ctx = LocalContext.current
     val c = ctx.container
     val bus = app.rustle.ui.LocalBus.current
@@ -280,6 +340,7 @@ private fun NetCard(h: Home, phone: Phone) {
         PixelButton(stringResource(R.string.h_net_go), {
             c.write { goNet(phone.wifi) }
             bus.note(ctx.getString(R.string.n_net), ctx.getString(R.string.n_net_b, h.name, n))
+            done()
         }, Modifier.fillMaxWidth().padding(top = 8.dp), small = true)
     }
 }

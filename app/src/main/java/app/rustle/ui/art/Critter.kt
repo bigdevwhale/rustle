@@ -68,7 +68,6 @@ object Critter {
     }
 
     fun draw(look: Look, pose: Pose, tick: Int, petted: Boolean = false, lying: Boolean = false, squash: Double = 0.0, step: Int = 0): Buf {
-        val out = Buf(W, H)
         val t = look.traits
         val sp = look.species
         val lie = lying || pose == Pose.SLEEP
@@ -87,30 +86,17 @@ object Critter {
         if (Trait.CUDDLY in t) fluff(fig, s, body, line)
         if (!lie) face(fig, s, look, pose, tick, petted, still)
 
-        // ---- Breathing, squash and stretch, a round belly: the figure scaled about its feet. ----
-        val breath = if (still) 0.0 else sin(tick / 22.0) * (if (lie) .05 else .025)
-        val sq = squash + breath
+        // ---- Dressed first, as drawn: everything he wears sits on the sprite's own pixels. ----
         val fw = s.right - s.left + 1; val fh = s.bottom - s.top + 1
-        val nw = (fw * (1 + sq * .5)).roundToInt() + (if (Trait.GOURMET in t) 2 else 0) - (if (pose == Pose.HUNGRY) 1 else 0)
-        val nh = (fh * (1 - sq)).roundToInt().coerceAtLeast(4)
-        val hop = if (step != 0) 1 else 0
-        val mid = (s.left + s.right + 1) / 2.0
-        val foot = s.bottom + 1 - hop
-        fun mx(x: Double) = mid + (x - mid) * nw / fw
-        fun my(y: Double) = foot - (s.bottom + 1 - y) * nh / fh
-        val shown = Buf(W, H)
-        if (nw == fw && nh == fh) shown.blit(fig, 0, -hop)
-        else {
-            val crop = Buf(fw, fh); crop.blit(fig, -s.left, -s.top)
-            shown.blitScaled(crop, (mid - nw / 2.0).roundToInt(), foot - nh, nw, nh)
-        }
-        val fx = mx(cx)
-        val top = my(crown.toDouble())
-        val ry = nh / 2.0
-        val cy = my(kind.neck.toDouble()) - ry * .42
-        val rx = min(nw / 2.0, 15.0)
+        val foot = s.bottom + 1
+        val fx = cx
+        val top = crown.toDouble()
+        val ry = fh / 2.0
+        val cy = kind.neck - ry * .42
+        val rx = min(fw / 2.0, 15.0)
+        val out = Buf(W, H)
 
-        // ---- Behind him: the cape and the backpack. ----
+        // Behind him: the cape and the backpack.
         if ("cape" in look.wear && !lie) {
             val cape = ramp(rgb(0x8A3A6A))
             val from = (cy - ry * .45).toInt()
@@ -126,29 +112,53 @@ object Critter {
             out.rect(bx + 1, by + 6, 9, 3, bag.d); out.rect(bx + 1, by + 6, 9, 1, bag.l); out.p(bx + 5, by + 7, rgb(0xE8B850))
             out.ring(bx, by, 11, 15, bag.dd)
         }
-        out.blit(shown, 0, 0)
+        out.blit(fig, 0, 0)
 
-        // ---- In front: the neck, the blanket, the eyes, the hat. ----
-        Wear.neck(out, look, pose, fx, cy, rx, ry, lie, shown, tick)
+        // In front: the neck, the blanket, the eyes, the hat.
+        // The neck is about as wide as the face: wings, tails and spread feathers stay out of the scarf (#6).
+        val face = (s.eyes[1].x1 - s.eyes[0].x0) / 2.0 + 5
+        Wear.neck(out, look, pose, fx, cy, rx, ry, lie, fig, tick, neckHalf = min(rx, face))
         if (pose == Pose.COLD && !lie) {
-            val from = my(s.eyes.maxOf { it.y1 } + 2.0).toInt()
-            for (y in from until H) for (x in 0 until W) if (shown.filled(x, y) && y > from + (abs(x - fx) / 3.5).toInt()) {
+            val from = s.eyes.maxOf { it.y1 } + 2
+            for (y in from until H) for (x in 0 until W) if (fig.filled(x, y) && y > from + (abs(x - fx) / 3.5).toInt()) {
                 val c = if (((x / 3) + (y / 3)) % 2 == 0) PLAID_A else PLAID_B
                 out.p(x, y, if ((x + y) % 5 == 0) mix(c, INK, .2f) else c)
             }
             out.line((fx - 12).toInt(), from + 5, fx.toInt(), from + 1, mix(PLAID_A, INK, .4f))
         }
         if (!lie) {
-            val ey = my(s.eyes[0].cy).roundToInt()
-            Wear.eyes(out, look, pose, s.eyes.map { (mx(it.cx) - 1.5).roundToInt() }, ey)
+            val ey = s.eyes[0].cy.roundToInt()
+            Wear.eyes(out, look, pose, s.eyes.map { (it.cx - 1.5).roundToInt() }, ey)
             if (pose == Pose.HOT) {
-                val x = mx(s.eyes[1].x1 + 2.0).roundToInt(); val y = my(s.eyes[1].y0 - 3.0).roundToInt()
+                val x = s.eyes[1].x1 + 2; val y = s.eyes[1].y0 - 3
                 out.p(x, y - 1, SWEAT); out.rect(x - 1, y, 3, 2, SWEAT); out.p(x, y + 2, mix(SWEAT, WHITE, .5f))
             }
         }
         Wear.head(out, look, pose, fx, top, false, tick)
-        if (pose == Pose.COLD && !still && tick % 6 < 3) return out.shifted(1)
-        return out
+
+        // ---- Then moved as one picture, so a hat or a scarf can never fall out of step with him (#5). ----
+        // Breathing lifts everything above the chest by a pixel; nothing is resampled, so nothing tears.
+        val inhale = !still && sin(tick / 22.0) > 0
+        // The seam is low on the belly, under the scarf and its hanging end, so what he wears round the neck
+        // rises with his head instead of being split by the breath.
+        val chest = if (lie) (s.top + s.bottom) / 2 else (kind.neck + 9).coerceAtMost(s.bottom - 3)
+        // Squash and stretch (a jump when stroked) and a round belly scale the whole of him about his feet,
+        // symmetrically about his middle.
+        val kx = 1 + squash * .5 + (if (Trait.GOURMET in t) 2.0 / fw else 0.0)
+        val ky = 1 - squash
+        val hop = if (step != 0) 1 else 0
+        val shown = if (!inhale && kx == 1.0 && ky == 1.0 && hop == 0) out else Buf(W, H).also { o ->
+            val mid = (s.left + s.right + 1) / 2.0
+            for (y in 0 until H) for (x in 0 until W) {
+                var sy = kotlin.math.floor(foot - (foot - (y + hop + .5)) / ky).toInt()
+                if (inhale && sy < chest) sy += 1
+                val sx = kotlin.math.floor(mid + (x + .5 - mid) / kx).toInt()
+                val c = out.get(sx, sy)
+                if (c ushr 24 != 0) o.d[y * W + x] = c
+            }
+        }
+        if (pose == Pose.COLD && !still && tick % 6 < 3) return shown.shifted(1)
+        return shown
     }
 
     /** Draws [fn] on a scratch layer, rings it with [line] and slips it under what is here. */

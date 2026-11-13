@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.rustle.R
 import app.rustle.container
@@ -69,7 +70,10 @@ sealed class Overlay {
     data object Feats : Overlay()
     data object Needs : Overlay()
     data object Clean : Overlay()
+    data object TripLog : Overlay()
     data class Find(val key: String) : Overlay()
+    /** A plate from under the home actions opened as a sheet: "asks", "clean", "net" or "goal". */
+    data class Card(val which: String) : Overlay()
     data class Send(val district: District, val minutes: Int) : Overlay()
 }
 
@@ -119,7 +123,7 @@ fun RustleRoot(s: State, clock: Long? = null, tab0: Tab = Tab.HOME, overlay0: Ov
                         Tab.WORKSHOP -> WorkshopScreen(h)
                     }
                 }
-                TabBar(tab) { tab = it }
+                TabBar(tab, badges(h)) { tab = it }
             }
             when (val o = overlay) {
                 Overlay.Settings -> SettingsPage(s, nav)
@@ -129,7 +133,9 @@ fun RustleRoot(s: State, clock: Long? = null, tab0: Tab = Tab.HOME, overlay0: Ov
                 Overlay.Feats -> app.rustle.ui.home.FeatsPage(h, nav)
                 Overlay.Needs -> app.rustle.ui.home.NeedsSheet(h, nav)
                 Overlay.Clean -> app.rustle.ui.home.CleanScene(h, nav)
+                Overlay.TripLog -> app.rustle.ui.trips.TripLogSheet(h, nav)
                 is Overlay.Find -> FindSheet(h, o.key, nav)
+                is Overlay.Card -> app.rustle.ui.home.HomeCardSheet(h, phone, o.which, nav)
                 is Overlay.Send -> FaceDown(h, o.district, o.minutes, phone, nav)
                 null -> Unit
             }
@@ -170,9 +176,22 @@ private fun Header(h: Home, go: (Overlay) -> Unit) {
     }
 }
 
-/** Four tabs, each a pixel picture over a word; the chosen one sits on a copper pill. */
+/**
+ * What a tab has waiting, shown on it: the minutes left while he is out, and how many things the workshop can
+ * make from what is in the pantry.
+ */
 @Composable
-private fun TabBar(tab: Tab, onTab: (Tab) -> Unit) {
+private fun badges(h: Home): Map<Tab, String> {
+    val out = HashMap<Tab, String>()
+    h.away?.let { t -> out[Tab.TRIPS] = if (t.minutes > 0) stringResource(R.string.t_min, ((t.due - h.now) / app.rustle.data.MIN + 1).coerceAtLeast(1)) else "…" }
+    val ready = app.rustle.domain.Catalog.builds.count { it.key !in h.s.built && app.rustle.domain.Catalog.canPay(h.s.inv, it.cost) }
+    if (ready > 0) out[Tab.WORKSHOP] = ready.toString()
+    return out
+}
+
+/** Four tabs, each a pixel picture over a word; the chosen one sits on a copper pill, news on a small plate. */
+@Composable
+private fun TabBar(tab: Tab, badges: Map<Tab, String>, onTab: (Tab) -> Unit) {
     Row(Modifier.fillMaxWidth().background(C.boardD).navigationBarsPadding().padding(horizontal = 6.dp, vertical = 6.dp)) {
         for ((t, l, icon) in listOf(
             Triple(Tab.HOME, R.string.tab_home, app.rustle.ui.art.Icons.home),
@@ -187,7 +206,13 @@ private fun TabBar(tab: Tab, onTab: (Tab) -> Unit) {
                     .clickable { onTab(t) }.padding(vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                app.rustle.ui.components.BufImage(icon, scale = 1.dp)
+                Box(contentAlignment = Alignment.TopEnd) {
+                    app.rustle.ui.components.BufImage(icon, scale = 1.dp, modifier = Modifier.padding(horizontal = 14.dp))
+                    badges[t]?.let { b ->
+                        Text(b, style = T.Small.copy(color = C.paper, fontSize = 11.sp), maxLines = 1,
+                            modifier = Modifier.background(C.ember, androidx.compose.foundation.shape.RoundedCornerShape(8.dp)).padding(horizontal = 5.dp))
+                    }
+                }
                 Text(stringResource(l), style = T.Small.copy(color = if (on) C.hi else C.textDim), textAlign = TextAlign.Center, maxLines = 1)
             }
         }

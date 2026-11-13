@@ -63,6 +63,14 @@ fun FaceDown(h: Home, d: District, minutes: Int, phone: Phone, nav: Nav) {
         c.write { startTrip(d, minutes) }
     }
     LaunchedEffect(phone.faceDown) { if (phone.faceDown) go() }
+    // Turned over, many phones switch the screen off before the sensor is read, and the sensor stops with it;
+    // locking the phone or putting the app away means the same: he leaves (#2).
+    val life = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    androidx.compose.runtime.DisposableEffect(life) {
+        val obs = androidx.lifecycle.LifecycleEventObserver { _, e -> if (e == androidx.lifecycle.Lifecycle.Event.ON_STOP) go() }
+        life.lifecycle.addObserver(obs)
+        onDispose { life.lifecycle.removeObserver(obs) }
+    }
     LaunchedEffect(gone) { if (gone) { delay(1600); nav.tab(Tab.HOME) } }
     BackHandler { nav.close() }
     Column(
@@ -100,5 +108,5 @@ private fun flip(b: Buf, t: Int, h: Home, gone: Boolean) {
     if (ph > 4) { b.rect(6, cy - ph / 2, 48, 1, rgb(0xC8D8E8)); b.rect(6, cy + ph / 2 - 1, 48, 1, rgb(0x3A4A58)) }
     if (col == back && ph > 12) { b.rect(12, cy - 6, 6, 6, rgb(0x202428)); b.rect(13, cy - 5, 4, 4, rgb(0x5A7AA0)) }
     b.rect(2, 49, 92, 2, rgb(0x5A3A1E))
-    if (!gone) b.blit(Critter.draw(h.look, Pose.IDLE, t), 60, 21)
+    if (!gone) b.blit(Critter.draw(h.look, Pose.IDLE, t), 47, 7)
 }

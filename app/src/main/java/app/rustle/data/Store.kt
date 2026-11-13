@@ -42,7 +42,8 @@ object Json {
             put("trip", JSONObject().put("d", t.district.name).put("start", t.start).put("min", t.minutes).put("peek", t.peekMs)
                 .put("unlock", t.unlockAt).put("ended", t.ended).put("cut", t.cut))
         }
-        s.night?.let { n -> put("night", JSONObject().put("start", n.start).put("ch", n.charging).put("peek", n.peekMs).put("unlock", n.unlockAt).put("ended", n.ended)) }
+        s.night?.let { n -> put("night", JSONObject().put("start", n.start).put("ch", n.charging).put("peek", n.peekMs).put("unlock", n.unlockAt).put("ended", n.ended)
+            .put("down", n.downAt).put("settled", n.settled)) }
         put("trips", JSONArray().also { a ->
             s.trips.forEach { t -> a.put(JSONObject().put("at", t.at).put("d", t.district.name).put("min", t.minutes).put("cut", t.cut).put("f", JSONArray(t.finds)).put("line", t.line)) }
         })
@@ -60,6 +61,8 @@ object Json {
         put("theme", s.theme); put("hue", s.hue); if (!s.lat.isNaN()) { put("lat", s.lat); put("lon", s.lon) }; put("place", s.placeName)
         put("weatherOn", s.weatherOn); put("locAsked", s.locAsked); put("wx", s.wx); put("temp", s.temp); put("wxAt", s.wxAt); put("dry", s.dryLong); put("requests", JSONObject().also { o -> s.requests.forEach { (k, v) -> o.put(k, v) } })
         put("cloths", s.cloths); put("cleanAt", s.cleanAt); put("cleans", s.cleans); put("netAt", s.netAt); put("netDay", s.netDay); put("netTrips", s.netTrips)
+        put("pickD", s.pickD); put("pickMin", s.pickMin)
+        put("larder", JSONObject().also { o -> s.larder.forEach { (k, v) -> o.put(k, v) } })
     }.toString()
 
     private fun JSONObject.map(name: String): Map<String, Long> =
@@ -75,7 +78,7 @@ object Json {
         val trip = o.optJSONObject("trip")?.let {
             Trip(district(it.getString("d")), it.getLong("start"), it.getInt("min"), it.optLong("peek"), it.optLong("unlock"), it.optLong("ended"), it.optBoolean("cut"))
         }
-        val night = o.optJSONObject("night")?.let { Night(it.getLong("start"), it.optBoolean("ch"), it.optLong("peek"), it.optLong("unlock"), it.optLong("ended")) }
+        val night = o.optJSONObject("night")?.let { Night(it.getLong("start"), it.optBoolean("ch"), it.optLong("peek"), it.optLong("unlock"), it.optLong("ended"), it.optLong("down"), it.optLong("settled")) }
         val trips = o.optJSONArray("trips")?.let { a ->
             (0 until a.length()).map { i ->
                 val t = a.getJSONObject(i)
@@ -104,6 +107,7 @@ object Json {
             cooked = o.map("cooked").mapValues { it.value.toInt() }, dryLong = o.optInt("dry"), theme = o.optString("theme", "system").ifBlank { "system" }, lat = o.optDouble("lat"), lon = o.optDouble("lon"), placeName = o.optString("place"),
             weatherOn = o.optBoolean("weatherOn", true), locAsked = o.optBoolean("locAsked"), wx = o.optString("wx"), temp = o.optInt("temp", Int.MIN_VALUE), wxAt = o.optLong("wxAt"), hue = o.optString("hue", "GREEN").ifBlank { "GREEN" }, requests = o.map("requests"),
             cloths = o.optInt("cloths"), cleanAt = o.optLong("cleanAt"), cleans = o.optInt("cleans"), netAt = o.optLong("netAt"), netDay = o.optLong("netDay"), netTrips = o.optInt("netTrips"),
+            pickD = o.optString("pickD"), pickMin = o.optInt("pickMin", -1), larder = o.map("larder").mapValues { it.value.toInt() },
         )
     }
 }

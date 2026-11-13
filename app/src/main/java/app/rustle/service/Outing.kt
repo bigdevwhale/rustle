@@ -87,9 +87,9 @@ class Outing : Service() {
                 }
                 n != null && n.ended == 0L -> when (action) {
                     Intent.ACTION_USER_PRESENT ->
-                        if (now - n.start >= Nights.MIN_SLEEP && Nights.hourOf(now) in Nights.WAKE_HOUR..13) s.copy(night = n.copy(ended = now))
-                        else s.copy(night = n.copy(unlockAt = if (n.unlockAt == 0L) now else n.unlockAt))
-                    else -> if (n.unlockAt > 0) s.copy(night = n.copy(peekMs = n.peekMs + (now - n.unlockAt), unlockAt = 0)) else s
+                        if (Nights.morning(n, now)) s.copy(night = Nights.settle(n, now).copy(ended = now))
+                        else s.copy(night = Nights.unlocked(n, now))
+                    else -> s.copy(night = Nights.screenOff(n, now))
                 }
                 else -> s
             }
@@ -108,7 +108,7 @@ class Outing : Service() {
             val n = s.night
             when {
                 t != null && t.ended == 0L -> {
-                    val peek = t.peekMs + if (t.unlockAt > 0) now - t.unlockAt else 0
+                    val peek = t.peek(now)
                     when {
                         t.minutes > 0 && now >= t.due -> { ended = true; s.copy(trip = t.copy(ended = t.due)) }
                         t.minutes > 0 && peek > t.allowance -> { ended = true; s.copy(trip = t.copy(ended = now, cut = true, peekMs = peek, unlockAt = 0)) }
@@ -116,7 +116,8 @@ class Outing : Service() {
                     }
                 }
                 // A night nobody woke up from ends by itself in the afternoon.
-                n != null && n.ended == 0L && now - n.start > 16 * 60 * MIN -> { ended = true; s.copy(night = n.copy(ended = now)) }
+                n != null && n.ended == 0L && now - n.start > 16 * 60 * MIN -> { ended = true; s.copy(night = Nights.settle(n, now).copy(ended = now)) }
+                n != null && n.ended == 0L -> Nights.settle(n, now).let { if (it != n) s.copy(night = it) else s }
                 else -> s
             }
         }

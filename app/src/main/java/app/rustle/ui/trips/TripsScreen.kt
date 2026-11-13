@@ -7,8 +7,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import app.rustle.ui.art.toBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -23,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.rustle.R
 import app.rustle.container
 import app.rustle.domain.Catalog
@@ -52,8 +60,12 @@ val LENGTHS = listOf(15, 25, 45, 60, 90, 0)
 fun TripsScreen(h: Home, nav: Nav) {
     val ctx = LocalContext.current
     val c = ctx.container
-    var pick by rememberSaveable { mutableStateOf(h.open.last().name) }
-    var minutes by rememberSaveable { mutableIntStateOf(25) }
+    // The choice is kept in the household, so the widget sends him to the same place for as long (#4).
+    var pick by rememberSaveable { mutableStateOf(h.s.pickD.takeIf { p -> h.open.any { it.name == p } } ?: h.open.last().name) }
+    var minutes by rememberSaveable { mutableIntStateOf(h.s.pickMin.takeIf { it in LENGTHS } ?: 25) }
+    androidx.compose.runtime.LaunchedEffect(pick, minutes) {
+        if (h.s.pickD != pick || h.s.pickMin != minutes) c.write { store.update { it.copy(pickD = pick, pickMin = minutes) } }
+    }
     val district = District.valueOf(pick).takeIf { it in h.open } ?: District.PORT
     val notif = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { nav.go(Overlay.Send(district, minutes)) }
     fun send() {
@@ -62,52 +74,72 @@ fun TripsScreen(h: Home, nav: Nav) {
             notif.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else nav.go(Overlay.Send(district, minutes))
     }
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    val busy = h.away != null || h.asleep != null || h.surfing != null
+    // The choice scrolls; what it comes to and the button to send him stay at the bottom, always in reach.
+    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Tip("trips", stringResource(R.string.tip_trips_t), stringResource(R.string.tip_trips), h.look, h.s.tips)
-        val busy = h.away != null || h.asleep != null || h.surfing != null
         if (busy) Panel(Modifier.fillMaxWidth(), fill = C.note) {
             Text(stringResource(when { h.away != null -> R.string.t_busy_away; h.surfing != null -> R.string.t_busy_net; else -> R.string.t_busy_sleep }, h.name), style = T.Body)
             PixelButton(stringResource(R.string.t_to_home), { nav.tab(Tab.HOME) }, Modifier.fillMaxWidth().padding(top = 8.dp), small = true)
         }
+        // The places as a row of picture cards: all five in reach with a swipe, the chosen one lit.
         Section(stringResource(R.string.t_where))
-        for (d in District.entries) {
-            val open = d in h.open
-            val on = open && d == district
-            val found = Catalog.of(d).count { it.key in h.s.seen }
-            Panel(Modifier.fillMaxWidth(), fill = when { on -> C.copperL; open -> C.paper; else -> C.paperD }, onClick = if (open && !busy) ({ pick = d.name }) else null,
-                padding = androidx.compose.foundation.layout.PaddingValues(8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    BufImage(Places.of(d, open), scale = 1.5.dp)
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(d.name_.of(h.ru), style = T.Name.copy(color = if (open) C.ink else C.muted), modifier = Modifier.weight(1f), maxLines = 1)
-                            Text("$found/${Catalog.of(d).size}", style = T.Small)
+        // All five places as even rows: the picture, the name on one line, one short line under it.
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            for (d in District.entries) {
+                val open = d in h.open
+                val on = open && d == district
+                val found = Catalog.of(d).count { it.key in h.s.seen }
+                Panel(Modifier.fillMaxWidth(), fill = when { on -> C.copperL; open -> C.paper; else -> C.paperD }, onClick = if (open && !busy) ({ pick = d.name }) else null,
+                    padding = androidx.compose.foundation.layout.PaddingValues(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        BufImage(Places.of(d, open), scale = 1.dp)
+                        Column(Modifier.weight(1f)) {
+                            Text(d.name_.of(h.ru), style = T.Name.copy(color = if (open) C.ink else C.muted), maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            Text(if (open) stringResource(R.string.t_found, found, Catalog.of(d).size) else stringResource(R.string.t_locked_short, Catalog.build(d.tool!!)!!.name.of(h.ru)),
+                                style = T.Small.copy(color = if (open) C.muted else C.emberD), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         }
-                        if (open) Text(d.where.of(h.ru), style = T.Small, maxLines = 2)
-                        else Text(stringResource(R.string.t_locked, Catalog.build(d.tool!!)!!.name.of(h.ru)), style = T.Small.copy(color = C.emberD), maxLines = 2)
+                        if (on) Text("✓", style = T.Name.copy(color = C.emberD))
                     }
                 }
             }
         }
-        Section(stringResource(R.string.t_how_long))
-        Flow {
-            for (m in LENGTHS) Chip(if (m == 0) stringResource(R.string.t_free) else stringResource(R.string.t_min, m), m == minutes, { minutes = m }, dark = true)
+        Text(district.where.of(h.ru), style = T.Small.copy(color = C.textDim), maxLines = 2)
+        Section(stringResource(R.string.t_how_long), stringResource(R.string.t_how_long_note))
+        app.rustle.ui.components.Cells(LENGTHS.size, LENGTHS.size, gap = 4.dp) { i, m ->
+            val len = LENGTHS[i]
+            app.rustle.ui.components.SegChip(if (len == 0) "∞" else "$len", len == minutes, { minutes = len }, m)
         }
-        Text(
-            if (minutes == 0) stringResource(R.string.t_free_hint)
-            else stringResource(R.string.t_expect, (Loot.count(minutes, true, "backpack" in h.s.wear && "backpack" in h.s.built) + Loot.bonus(h.mood, h.full, minutes)).coerceAtLeast(1)),
-            style = T.Small.copy(color = C.textDim),
+        // What it comes to, in one line, and what mood and hunger do to it.
+        val count = (Loot.count(minutes, true, "backpack" in h.s.wear && "backpack" in h.s.built) + Loot.bonus(h.mood, h.full, minutes)).coerceAtLeast(1)
+        Text(if (minutes == 0) stringResource(R.string.t_free_hint) else stringResource(R.string.t_expect, count), style = T.Small.copy(color = C.textDim))
+        val mods = listOfNotNull(
+            stringResource(R.string.mood_plus).takeIf { h.mood >= Loot.CHEERFUL && minutes >= 25 },
+            stringResource(R.string.mood_minus).takeIf { h.mood <= Loot.GLUM },
+            stringResource(R.string.hungry_minus).takeIf { h.full <= Loot.HUNGRY },
         )
-        if (h.mood >= Loot.CHEERFUL && minutes >= 25) Text(stringResource(R.string.mood_plus), style = T.Small.copy(color = C.hi))
-        if (h.mood <= Loot.GLUM) Text(stringResource(R.string.mood_minus), style = T.Small.copy(color = C.emberL))
-        if (h.full <= Loot.HUNGRY) Text(stringResource(R.string.hungry_minus), style = T.Small.copy(color = C.emberL))
-        PixelButton(stringResource(R.string.t_go), ::send, Modifier.fillMaxWidth(), enabled = !busy)
-        Text(stringResource(R.string.t_rules), style = T.Small.copy(color = C.textDim))
+        if (mods.isNotEmpty()) Text(mods.joinToString(" · "), style = T.Small.copy(color = if (h.mood >= Loot.CHEERFUL) C.hi else C.emberL))
+        if (h.s.trips.isNotEmpty()) PixelButton(stringResource(R.string.t_log_open, h.s.trips.size), { nav.go(Overlay.TripLog) }, Modifier.fillMaxWidth(), kind = app.rustle.ui.components.Kind.PALE, small = true)
+    }
+    if (!busy) Column(Modifier.fillMaxWidth().background(C.boardD).padding(horizontal = 14.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        val back = if (minutes > 0) " · " + stringResource(R.string.t_back_at, DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(h.now + minutes * app.rustle.data.MIN))) else ""
+        Text(district.name_.of(h.ru) + " · " + (if (minutes == 0) stringResource(R.string.t_free) else stringResource(R.string.t_min, minutes)) + back,
+            style = T.Small.copy(color = C.text), maxLines = 1)
+        PixelButton(stringResource(R.string.t_go), ::send, Modifier.fillMaxWidth())
+    }
+    }
+}
 
-        if (h.s.trips.isNotEmpty()) {
-            Section(stringResource(R.string.t_log))
-            val df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-            for (t in h.s.trips.take(20)) Panel(Modifier.fillMaxWidth()) {
+/** Where he has been: each outing with its finds, on a sheet of its own. */
+@Composable
+fun TripLogSheet(h: Home, nav: Nav) {
+    app.rustle.ui.components.Sheet(nav::close) {
+        Text(stringResource(R.string.t_log), style = T.Title)
+        val df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (t in h.s.trips.take(30)) Panel(Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(t.district.name_.of(h.ru), style = T.Name, modifier = Modifier.weight(1f))
                     Text(stringResource(R.string.t_min, t.minutes), style = T.Small)

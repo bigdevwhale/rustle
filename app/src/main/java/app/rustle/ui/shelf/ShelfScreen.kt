@@ -14,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -50,7 +52,9 @@ fun ShelfScreen(h: Home, nav: Nav) {
                 for (f in list) {
                     val seen = f.key in h.s.seen
                     val n = h.s.inv[f.key] ?: 0
-                    Box(Modifier.size(56.dp).tray().then(if (seen) Modifier.clickable { nav.go(Overlay.Find(f.key)) } else Modifier), contentAlignment = Alignment.Center) {
+                    val what = if (seen) f.name.of(h.ru) + (if (n > 0) " ×$n" else "") else stringResource(R.string.s_unseen)
+                    Box(Modifier.size(56.dp).tray().then(if (seen) Modifier.clickable { nav.go(Overlay.Find(f.key)) } else Modifier)
+                        .semantics(mergeDescendants = true) { contentDescription = what }, contentAlignment = Alignment.Center) {
                         FindIcon(f, seen = seen)
                         if (n > 0) Text("$n", style = T.Small.copy(color = C.hi), modifier = Modifier.align(Alignment.BottomEnd).padding(end = 4.dp))
                     }

@@ -15,6 +15,7 @@ import app.rustle.R
 import app.rustle.container
 import app.rustle.data.State
 import app.rustle.device.Device
+import app.rustle.domain.District
 import app.rustle.domain.Nights
 import app.rustle.domain.Pose
 import app.rustle.ru
@@ -65,9 +66,11 @@ class Widget : AppWidgetProvider() {
                 if (f == null) toast(ctx, ctx.getString(R.string.wd_no_food)) else { c.feed(f); toast(ctx, ctx.getString(R.string.wd_fed, f.name.of(ctx.ru))) }
             }
             SEND -> if (h.away == null && h.asleep == null && h.surfing == null) {
+                // Where and how long the outings screen has picked; the last outing if it never was (#4).
                 val last = s.trips.firstOrNull()
-                val d = last?.district?.takeIf { it in h.open } ?: h.open.last()
-                val m = last?.minutes?.takeIf { it in listOf(15, 25, 45, 60, 90) } ?: 25
+                val d = District.entries.firstOrNull { it.name == s.pickD }?.takeIf { it in h.open }
+                    ?: last?.district?.takeIf { it in h.open } ?: h.open.last()
+                val m = s.pickMin.takeIf { it in app.rustle.ui.trips.LENGTHS } ?: last?.minutes?.takeIf { it in app.rustle.ui.trips.LENGTHS } ?: 25
                 c.startTrip(d, m)
                 toast(ctx, ctx.getString(R.string.wd_sent, d.name_.of(ctx.ru)))
             }

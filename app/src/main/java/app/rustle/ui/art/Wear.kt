@@ -100,10 +100,21 @@ internal object Wear {
     }
 
     /** Round the neck: the scarf, a bow tie, a bell on a ribbon, beads. */
-    fun neck(out: Buf, look: Look, pose: Pose, cx: Double, cy: Double, rx: Double, ry: Double, lie: Boolean, body: Buf, tick: Int) {
+    fun neck(out: Buf, look: Look, pose: Pose, cx: Double, cy: Double, rx: Double, ry: Double, lie: Boolean, body: Buf, tick: Int, neckHalf: Double = rx) {
         if (lie || pose == Pose.SLEEP) return
         val sy = (cy + ry * .42).roundToInt()
         val x = cx.roundToInt()
+        // Only the neck itself: the run of his body through the middle of the row, not a tail or a wing
+        // that happens to reach the same height (#6).
+        fun neckRun(y: Int, rows: Int): IntRange {
+            fun on(i: Int) = (0 until rows).all { body.filled(i, y + it) }
+            var l = x; var r = x
+            if (!on(x)) return x..x - 1
+            val half = neckHalf.roundToInt().coerceAtLeast(6)
+            while (l - 1 >= 0 && x - (l - 1) <= half && on(l - 1)) l--
+            while (r + 1 < out.w && (r + 1) - x <= half && on(r + 1)) r++
+            return l..r
+        }
         if ("cape" in look.wear) {
             // The cape's collar and clasp show in front.
             val cape = ramp(rgb(0x8A3A6A))
@@ -112,7 +123,7 @@ internal object Wear {
         }
         when {
             "scarf" in look.wear -> {
-                for (i in 0 until out.w) if (body.filled(i, sy) && body.filled(i, sy + 2)) { out.p(i, sy, if ((i / 2) % 3 == 0) RED.l else RED.b); out.p(i, sy + 1, RED.b); out.p(i, sy + 2, RED.d) }
+                for (i in neckRun(sy, 3)) { out.p(i, sy, if ((i / 2) % 3 == 0) RED.l else RED.b); out.p(i, sy + 1, RED.b); out.p(i, sy + 2, RED.d) }
                 val tx = (cx - 10).toInt()
                 for (k in 0 until 5) { out.rect(tx - k / 2, sy + 2 + k, 3, 1, if (k % 2 == 0) RED.b else RED.l); out.p(tx - k / 2 + 2, sy + 2 + k, RED.d) }
                 out.rect(tx - 2, sy + 7, 3, 1, RED.d)
@@ -122,7 +133,7 @@ internal object Wear {
                 out.rect(x - 1, sy - 1, 3, 3, RED.dd); out.p(x - 4, sy - 1, RED.hi)
             }
             "bell" in look.wear -> {
-                for (i in 0 until out.w) if (body.filled(i, sy) && body.filled(i, sy + 1)) out.p(i, sy, BLUE.b)
+                for (i in neckRun(sy, 2)) out.p(i, sy, BLUE.b)
                 val swing = if (Art.still) 0 else (sin(tick / 7.0) * 1.2).roundToInt()
                 out.ell(x + swing, sy + 3, 2, 2, GOLD.b); out.p(x - 1 + swing, sy + 2, GOLD.hi); out.p(x + swing, sy + 5, GOLD.dd); out.rect(x - 2 + swing, sy + 4, 5, 1, GOLD.d)
             }

@@ -109,9 +109,10 @@ fun rememberPhone(still: Phone? = null): Phone {
                         val g = sqrt(x * x + y * y + z * z)
                         val now = System.currentTimeMillis()
                         if (g > 24f) phone = phone.copy(shookAt = now)
-                        val down = z < -8.6f && kotlin.math.abs(x) < 2.5f && kotlin.math.abs(y) < 2.5f
+                        // Screen to the table, give or take a case, a bump or a pillow.
+                        val down = z < -7f && kotlin.math.abs(x) < 4.5f && kotlin.math.abs(y) < 4.5f
                         if (down) { if (downSince == 0L) downSince = now } else downSince = 0L
-                        val fd = down && now - downSince > 1200
+                        val fd = down && now - downSince > 700
                         if (fd != phone.faceDown) phone = phone.copy(faceDown = fd)
                     }
                 }

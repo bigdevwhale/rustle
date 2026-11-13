@@ -6,6 +6,31 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.3.0] - 2026-11-13
+
+Fixes and wishes from players (#2–#7).
+
+- Outings (#2): he leaves as soon as the phone is locked or put away, not only when it is turned face down, and the face-down check is less fussy. While he is out and the screen is on, home shows how many minutes are left before he turns back, and he lets three minutes pass to put the phone down instead of one.
+- Nights (#7): he falls asleep once the phone has lain dark for a quarter of an hour, so scrolling in bed after "to bed" no longer spoils the night; the night counts from then. A good night is five and a half hours with the screen on for ten minutes at most, an ordinary one four hours and half an hour.
+- The kitchen (#3): a dish is eaten at once or put by in the pantry, and dishes in the pantry are given from the bowl later.
+- The widget (#4) sends him where and for as long as is picked on the outings screen.
+- He no longer looks cut in half as he breathes and walks (#5): he is dressed first and then moved as one picture, so hats and scarves keep in step with him, and breathing lifts him by a pixel below the scarf instead of stretching the sprite. The foxling also sleeps curled up anew, with one face.
+- The scarf and the bell's ribbon (#6) go round the neck only, not across a tail or wings.
+- Less scrolling, everywhere:
+  - Home fits on one screen: this week's requests, the spring-clean, the Net and what to make next are small equal plates in one row under the actions, each opening its own sheet.
+  - Outings: all five places in view at once as even rows (picture, name, how much is found or what to make first), the lengths as six equal buttons (15 to 90 and ∞), the log a sheet of its own; the place, the length, the time he'll be back and the button stay at the bottom. Nothing to swipe sideways, nothing cut off.
+  - The workshop's cards are half as tall, the button beside the name; its four sections sit two by two, each with how many things are ready on it.
+  - The tabs show the minutes left while he is out and how many things the workshop can make; the gauges say "hungry" and "glum" in words; the shelf reads out each find to a screen reader.
+- Stroking him takes a tap on him, not anywhere in the nook.
+- New pictures: all 62 finds, the icons, the five outing places and the nook's walls and floor are drawn with image generation through Codex (tools/gen.py) and shrunk into sprites by tools/art.py.
+
+<!-- tg
+Шуршик уходит гулять, как только заблокируешь телефон, а дома видно, сколько ещё можно смотреть в экран, пока он не повернул назад.
+Ночь теперь начинается, когда отложишь телефон: полистать ленту перед сном больше не портит ночь.
+На кухне можно готовить про запас в кладовку, а виджет отправляет туда и на столько, что выбрано в приложении.
+Новые картинки: все находки, иконки, места для вылазок и стены домика нарисованы заново, а Шуршик больше не «разрезается» при дыхании, и шапка с шарфом двигаются вместе с ним.
+-->
+
 ## [1.2.0] - 2026-11-11
 
 - All eight kinds drawn anew, each with a shape of its own: the hedgehog in a coat of spines, the lop with long ears and a cotton tail, the moth with fern-like feelers and spotted wings, the foxling with a bushy white-tipped tail, the owlet with a facial disc and folded wings, the kit with a question-mark tail, the flitter on wide webbed wings. Each one also has its own way of curling up to sleep.
