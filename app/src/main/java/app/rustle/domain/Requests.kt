@@ -53,6 +53,9 @@ sealed class Ask(val key: String) {
 }
 
 object Requests {
+    /** How many unfound kinds the open districts must still hide for «new finds» to be asked (#8). */
+    const val FRESH_LEFT = 4
+
     /** Weeks start on Monday. */
     fun week(day: Long): Long = Math.floorDiv(day + 3, 7)
 
@@ -90,11 +93,13 @@ object Requests {
             Ask.Far("w${w}_long", listOf(45, 60, 90)[r.nextInt(3)]),
             Ask.Trips("w${w}_trips", 4 + r.nextInt(3)),
         ).random(r)
+        // new kinds of finds only while the open districts still hide enough of them (#8): with everything found it can't be done
+        val unseen = Catalog.finds.count { it.district in open && it.key !in s.seen }
         val third = listOf(
             Ask.Nights("w${w}_nights", 2 + r.nextInt(2)),
             Ask.Fresh("w${w}_fresh", 2),
             Ask.Trips("w${w}_trips2", 3),
-        ).filter { it::class != second::class }.random(r)
+        ).filter { it::class != second::class && (it !is Ask.Fresh || unseen >= FRESH_LEFT) }.random(r)
         return listOf(bring, second, third)
     }
 

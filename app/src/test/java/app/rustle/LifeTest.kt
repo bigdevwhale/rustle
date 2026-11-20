@@ -170,4 +170,14 @@ class LifeTest {
         assertEquals(net.news.indices.toSet(), net.news.indices.map { net.line(s, it) }.toSet())
         for (l in net.news) assertTrue(l.ru, '—' !in l.ru && '—' !in l.en)
     }
+
+    /** With every find of the open districts found, «new finds» isn't asked: it couldn't be done (#8). */
+    @Test fun noNewFindsAskedWhenAllAreFound() {
+        val all = app.rustle.domain.Catalog.finds.associate { it.key to 1L }
+        val s = State(onboarded = true, started = 1, seen = all, built = app.rustle.domain.District.entries.mapNotNull { it.tool }.toSet())
+        repeat(60) { k ->
+            val now = 1_700_000_000_000L + k * 7 * app.rustle.data.DAY
+            org.junit.Assert.assertTrue(app.rustle.domain.Requests.of(s, now).none { it is app.rustle.domain.Ask.Fresh })
+        }
+    }
 }
