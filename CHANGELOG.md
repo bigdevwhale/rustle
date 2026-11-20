@@ -6,6 +6,15 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.3.1] - 2026-11-20
+
+- A request for new kinds of finds no longer comes when the open districts have next to nothing left to find, so a week's last request can always be done (#8). This week's is swapped for another at once.
+- Releases now carry an AAB for Google Play too, with all the languages in it, so the in-app switch to Russian always finds its strings.
+
+<!-- tg
+Исправлено: если все находки уже собраны, Шуршик больше не просит «новые находки» – последнее задание недели всегда можно выполнить
+-->
+
 ## [1.3.0] - 2026-11-13
 
 Fixes and wishes from players (#2–#7).
