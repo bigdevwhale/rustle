@@ -9,7 +9,8 @@ enum class Species(val title: L, val note: L, val body: Int, val accent: Int) {
     FOX(L("Foxling", "Лисёнок"), L("Pointed ears and a tail with a white tip.", "Острые уши и хвост с белым кончиком."), 0xD87A40, 0xFFF0E0),
     OWL(L("Owlet", "Совёнок"), L("A round face, a tiny beak and wings to hug with.", "Круглое лицо, крошечный клюв и крылья, чтобы обниматься."), 0x9A7A5A, 0xF0E0C8),
     CAT(L("Kit", "Котик"), L("Cat's ears and a thin tail with a question mark at the end.", "Кошачьи уши и тонкий хвост вопросиком."), 0x8A8A92, 0xE8E8EE),
-    BAT(L("Flitter", "Нетопырь"), L("Huge ears and folded wings. Hangs about at night.", "Огромные уши и сложенные крылья. Ночью оживляется."), 0x6A5A6A, 0xD8C8D0);
+    BAT(L("Flitter", "Нетопырь"), L("Huge ears and folded wings. Hangs about at night.", "Огромные уши и сложенные крылья. Ночью оживляется."), 0x6A5A6A, 0xD8C8D0),
+    OTTER(L("Splash", "Выдрёнок"), L("A round face, a cream chin and a thick tail. Holds paws in his sleep.", "Круглая мордочка, светлый подбородок и толстый хвост. Во сне держится за лапки."), 0x8A5A3A, 0xE8D4B8);
 
     companion object {
         fun of(name: String) = entries.firstOrNull { it.name == name } ?: MOUSE

@@ -105,7 +105,7 @@ fun ColourPicker(body: Int, onPick: (Int, Int) -> Unit) {
     }
 }
 
-/** The eight kinds as small moving portraits; the chosen one is framed. */
+/** The kinds as small moving portraits; the chosen one is framed. */
 @Composable
 fun SpeciesPicker(selected: app.rustle.domain.Species, body: Int, accent: Int, marks: app.rustle.domain.Marks, ru: Boolean, onPick: (app.rustle.domain.Species) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

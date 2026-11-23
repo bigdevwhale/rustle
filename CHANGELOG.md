@@ -6,6 +6,21 @@ line "<!-- tg", then 2-4 short lines in Russian for users (what is new, what is 
 then close it like any HTML comment. The release notes carry it, and the chat bot posts those lines.
 -->
 
+## [1.4.0] - 2026-11-23
+
+New places, a new kind and a fix from players (#9, #10, #12).
+
+- Two new outing places (#9): the Antenna Loft, opened with a paper kite, and the SIM Tray, opened with a paperclip pick. Twelve finds in each, two of them wonders, and his notes from both; the kite and the pick hang on the tool rack in the nook, which now has five pegs. 86 finds in all.
+- A new dish: poppy-seed roll (a seed, a rusk and honey).
+- A new kind (#12): the otter, with a cream chin and a thick tail, sitting and curled up asleep.
+- «Put it here» in the workshop works again (#10): the chosen furniture was lost because the weather's place name was saved under the same key and wrote over it. Old saves keep their place name.
+
+<!-- tg
+Два новых места для вылазок: Антенный чердак (нужен воздушный змей) и Лоток SIM-карты (нужна скрепка-отмычка), в каждом по 12 новых находок
+Новый питомец — выдрёнок
+Кнопка «Поставить» в мастерской снова работает: выбранная мебель больше не пропадает
+-->
+
 ## [1.3.1] - 2026-11-20
 
 - A request for new kinds of finds no longer comes when the open districts have next to nothing left to find, so a week's last request can always be done (#8). This week's is swapped for another at once.

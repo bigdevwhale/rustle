@@ -41,7 +41,7 @@ class RenderArt {
         File(out, "$name.png").writeBytes(png.toByteArray())
     }
 
-    private val all = setOf("lantern", "rope", "bed", "rug", "lamp", "picture", "plant", "garland", "clock", "shelf", "telescope", "earmuffs", "ladder")
+    private val all = setOf("lantern", "rope", "bed", "rug", "lamp", "picture", "plant", "garland", "clock", "shelf", "telescope", "earmuffs", "ladder", "kite", "clip")
     private val look = Look(0xC8946A, 0xF2DCC0, setOf(Trait.SLEEPYHEAD), setOf("scarf"))
 
     private fun scene(name: String, hour: Float, pose: Pose = Pose.IDLE, built: Set<String> = all, charging: Boolean = true, level: Int = 70, dark: Boolean = false, wx: app.rustle.domain.Wx? = null) {

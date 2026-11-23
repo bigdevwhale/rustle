@@ -33,20 +33,20 @@
 
 ## Outings
 
-- **Turn the phone face down** and Rustle goes out: to the charging port, the battery cellar, the ribbon-cable bridge, the speaker gorge or the observatory under the camera. New places open with tools from the workshop.
+- **Turn the phone face down** and Rustle goes out: to the charging port, the battery cellar, the ribbon-cable bridge, the speaker gorge, the observatory under the camera, the antenna loft or the SIM tray. New places open with tools from the workshop.
 - **The longer the phone lies there,** the further it goes and the more it brings. A quick look is fine; scroll for long and it turns back halfway.
 - **The outing shows in a notification,** and on Android 16 as a chip in the status bar.
 - **At night it sleeps by the stove.** Put the phone on charge and tuck it in. If the screen stays dark till morning, the night went well and it brings something back from its dreams.
 
 ## Finds, the workshop and the kitchen
 
-- **62 finds** from five places: buttons, screws, LEDs, feathers, beads, coins, bits of glass, plus raisins, rusks and honey for food. The rarest, the wonders, turn up on long outings.
+- **86 finds** from seven places: buttons, screws, LEDs, feathers, beads, coins, bits of glass, plus raisins, rusks and honey for food. The rarest, the wonders, turn up on long outings.
 - **In the workshop** finds become tools, furniture and clothes. What counts is the shape: any thread will do as thread. Try clothes on right in the workshop: hats, a scarf, a bow tie, glasses, a monocle, a backpack, a cape.
 - **In the kitchen** the pantry turns into tea, porridge, a raisin pie and honey cake. A dish fills it up more than its bits on their own.
 
 ## Yours
 
-- **Eight kinds:** a rustler, a hedgehog, a lop, a moth, a foxling, an owlet, a kit and a flitter, each with its own ears, tail, wings or spines.
+- **Nine kinds:** a rustler, a hedgehog, a lop, a moth, a foxling, an owlet, a kit, a flitter and an otter, each with its own ears, tail, wings or spines.
 - **Fur:** eight colours, or the colour of any photo: your cat, a favourite jumper, the sea. Patterns: spots, stripes, an eye patch, a mask or socks.
 - **Character grows from life.** Ten hours of outings and a tuft sticks up; seven good nights, rosy cheeks; restless nights, owl tufts on the ears.
 

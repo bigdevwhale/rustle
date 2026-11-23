@@ -30,7 +30,9 @@ enum class District(val name_: L, val where: L, val tool: String?) {
     CELLAR(L("Battery Cellar", "Батарейный погреб"), L("under the battery: warm, dark, smells of raisins", "под батареей: тепло, темно, пахнет изюмом"), "lantern"),
     BRIDGE(L("Ribbon Bridge", "Шлейфовый мост"), L("a flat cable over the gap between the boards", "плоский шлейф над пропастью между платами"), "rope"),
     GORGE(L("Speaker Gorge", "Динамиковое ущелье"), L("loud: every ring echoes for an hour", "громко: каждый звонок эхом гуляет целый час"), "earmuffs"),
-    DOME(L("The Observatory", "Обсерватория"), L("under the camera glass, where the sky shows through", "под стеклом камеры, где видно небо"), "ladder");
+    DOME(L("The Observatory", "Обсерватория"), L("under the camera glass, where the sky shows through", "под стеклом камеры, где видно небо"), "ladder"),
+    ANTENNA(L("Antenna Loft", "Антенный чердак"), L("up under the top edge, where the signal blows in like wind", "под верхней гранью, где сигнал дует, как ветер"), "kite"),
+    SIM(L("SIM Tray", "Лоток SIM-карты"), L("behind the little hole in the side: a drawer of golden contacts", "за дырочкой сбоку: выдвижной ящичек с золотыми контактами"), "clip");
 }
 
 /** A small thing brought back from an outing. [food] is how much it fills a belly (0 for things). */
@@ -130,6 +132,34 @@ object Catalog {
         f("led_white", "White LED", "Белый светодиод", Shape.LED, 0xF0F4FF, 1, District.DOME),
         f("seed_moon", "Moon seed", "Лунное семечко", Shape.SEED, 0xB8C0E0, 2, District.DOME, 30),
         f("scrap_chart", "Piece of a star chart", "Кусочек звёздной карты", Shape.SCRAP, 0x30406A, 2, District.DOME),
+
+        // The antenna loft: what the signal blows in from far away.
+        f("feather_swallow", "Swallow feather", "Ласточкино пёрышко", Shape.FEATHER, 0x30384A, 1, District.ANTENNA),
+        f("feather_peacock", "Peacock feather", "Павлинье пёрышко", Shape.FEATHER, 0x2A8A8A, 3, District.ANTENNA),
+        f("thread_silver", "Silver wire", "Серебряная проволочка", Shape.THREAD, 0xC8D0D8, 1, District.ANTENNA),
+        f("bead_sky", "Sky-blue bead", "Небесная бусина", Shape.BEAD, 0x7AB8F0, 1, District.ANTENNA),
+        f("star_signal", "Spark of a signal", "Искорка сигнала", Shape.STAR, 0x9AE0FF, 2, District.ANTENNA),
+        f("magnet_bar", "Bar magnet", "Магнит-брусочек", Shape.MAGNET, 0xC84A4A, 2, District.ANTENNA),
+        f("spring_antenna", "Antenna spring", "Антенная пружинка", Shape.SPRING, 0xB8C0C8, 1, District.ANTENNA),
+        f("scrap_postcard", "Corner of a postcard", "Уголок открытки", Shape.SCRAP, 0xF0A8A0, 2, District.ANTENNA),
+        f("button_brass", "Anchor button", "Пуговица с якорем", Shape.BUTTON, 0xD8A848, 2, District.ANTENNA),
+        f("sugar_floss", "Wisp of candy floss", "Клочок сахарной ваты", Shape.SUGAR, 0xF8C8E0, 1, District.ANTENNA, 20),
+        f("honey_comb", "Bit of honeycomb", "Кусочек сот", Shape.HONEY, 0xF0B040, 2, District.ANTENNA, 55),
+        f("gem_aurora", "Aurora glass", "Стёклышко-сияние", Shape.GEM, 0x70E0B0, 3, District.ANTENNA),
+
+        // The SIM tray: small, exact, golden things.
+        f("pin_eject", "Eject pin", "Скрепка-выталкиватель", Shape.PIN, 0xC8CED6, 1, District.SIM),
+        f("coin_contact", "Golden contact", "Золотой контакт", Shape.COIN, 0xE8C048, 1, District.SIM),
+        f("screw_micro", "Micro screw", "Микровинтик", Shape.SCREW, 0x9098A8, 1, District.SIM),
+        f("spring_tray", "Tray spring", "Пружинка лотка", Shape.SPRING, 0xD0D4DA, 1, District.SIM),
+        f("scrap_envelope", "Corner of a PIN envelope", "Уголок конверта с ПИН-кодом", Shape.SCRAP, 0xF0E8D8, 2, District.SIM),
+        f("key_puk", "PUK key", "Ключик PUK", Shape.KEY, 0xF0C050, 3, District.SIM),
+        f("magnet_tiny", "Button magnet", "Магнитик-таблетка", Shape.MAGNET, 0x707884, 1, District.SIM),
+        f("ring_gasket", "Rubber gasket", "Резиновое колечко", Shape.RING, 0x303038, 1, District.SIM),
+        f("led_blue", "Blue LED", "Синий светодиод", Shape.LED, 0x4A8AF0, 2, District.SIM),
+        f("gem_sapphire", "Sapphire crumb", "Сапфировая крошка", Shape.GEM, 0x3A5AD8, 3, District.SIM),
+        f("crumb_cracker", "Cracker", "Крекер", Shape.CRUMB, 0xE8C080, 1, District.SIM, 25),
+        f("seed_poppy", "Poppy seeds", "Маковые зёрнышки", Shape.SEED, 0x404858, 1, District.SIM, 20),
     )
 
     private val byKey = finds.associateBy { it.key }
@@ -145,6 +175,8 @@ object Catalog {
         b("rope", Kind.TOOL, "Rope", "Верёвка", "Opens the Ribbon Bridge.", "Открывает Шлейфовый мост.", Shape.THREAD to 3, Shape.SPRING to 1),
         b("earmuffs", Kind.TOOL, "Earmuffs", "Наушники-грелки", "Opens the Speaker Gorge.", "Открывают Динамиковое ущелье.", Shape.BUTTON to 2, Shape.FEATHER to 2, Shape.SPRING to 1),
         b("ladder", Kind.TOOL, "Ladder", "Лесенка", "Opens the Observatory.", "Открывает Обсерваторию.", Shape.PIN to 4, Shape.SCREW to 2, Shape.STAR to 2),
+        b("kite", Kind.TOOL, "Paper kite", "Воздушный змей", "Opens the Antenna Loft.", "Открывает Антенный чердак.", Shape.SCRAP to 2, Shape.THREAD to 2, Shape.FEATHER to 2, Shape.STAR to 1),
+        b("clip", Kind.TOOL, "Paperclip pick", "Скрепка-отмычка", "Opens the SIM Tray.", "Открывает Лоток SIM-карты.", Shape.PIN to 2, Shape.KEY to 2, Shape.MAGNET to 1, Shape.GEM to 1),
 
         b("bed", Kind.HOME, "Matchbox bed", "Кровать из коробка", "Good nights cheer him up more.", "После хорошей ночи настроение выше.", Shape.BUTTON to 2, Shape.THREAD to 2),
         b("rug", Kind.HOME, "Knitted rug", "Вязаный коврик", "Warmer feet.", "Лапам теплее.", Shape.THREAD to 4),
@@ -205,6 +237,7 @@ object Catalog {
         Dish("porridge", L("Seed porridge", "Каша из семечек"), mapOf(Shape.SEED to 2), 50, 5),
         Dish("pie", L("Raisin pie", "Пирожок с изюмом"), mapOf(Shape.CRUMB to 1, Shape.RAISIN to 1), 60, 10),
         Dish("honeycake", L("Honey cake", "Медовик"), mapOf(Shape.HONEY to 1, Shape.CRUMB to 1, Shape.SUGAR to 1), 90, 25),
+        Dish("poppyroll", L("Poppy-seed roll", "Рулет с маком"), mapOf(Shape.SEED to 1, Shape.CRUMB to 1, Shape.HONEY to 1), 80, 20),
     )
 
     /** How many of a shape are in hand. */

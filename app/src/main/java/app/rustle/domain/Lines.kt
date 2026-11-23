@@ -75,6 +75,18 @@ object Lines {
             l("Up here you can see the whole room. There is a book on your table.", "Отсюда видно всю комнату. На столе у тебя книжка."),
             l("The moon in the camera is the size of a button.", "Луна в камере размером с пуговицу."),
         ),
+        District.ANTENNA to listOf(
+            l("Flew the kite on the signal. It pulled like a puppy.", "Запускал змея на сигнале. Тянул, как щенок за поводок."),
+            l("Someone's message blew past. I didn't read it, honest.", "Мимо пролетело чьё-то сообщение. Я не читал, честно."),
+            l("The wind up there smells of other towns.", "Ветер на чердаке пахнет другими городами."),
+            l("Caught a feather between two bars of signal.", "Поймал пёрышко между двумя палочками сигнала."),
+        ),
+        District.SIM to listOf(
+            l("Slid the tray out a little and rode it back in.", "Чуть выдвинул лоток и прокатился на нём обратно."),
+            l("The SIM card was polishing its contacts. Very proud of them.", "Симка натирала свои контакты. Очень ими гордится."),
+            l("There is a number written in there. Yours, I think.", "Там внутри записан номер. Кажется, твой."),
+            l("It's tight in the tray. I breathed in the whole way.", "В лотке тесно. Всю дорогу шёл на вдохе."),
+        ),
     )
 
     val cut = listOf(

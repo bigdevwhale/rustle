@@ -102,6 +102,32 @@ FINDS = {
     "led_white": "a white 5mm LED with two metal legs, glowing bright (#F0F4FF)",
     "seed_moon": "a pale silvery seed shaped like a crescent moon, faintly glowing (#B8C0E0)",
     "scrap_chart": "a torn piece of a dark navy star chart with little white stars joined by lines (#30406A)",
+
+    "feather_swallow": "a sleek dark blue-black swallow feather with a white edge (#30384A)",
+    "feather_peacock": "a peacock feather tip with a shimmering teal and gold eye (#2A8A8A)",
+    "thread_silver": "a short loose curl of thin shiny silver wire (#C8D0D8)",
+    "bead_sky": "a round sky-blue glass bead with a hole, glossy (#7AB8F0)",
+    "star_signal": "a tiny glowing pale cyan spark of a radio signal, a four-pointed twinkle (#9AE0FF)",
+    "magnet_bar": "a small red bar magnet with a silver end (#C84A4A)",
+    "spring_antenna": "a thin coiled steel antenna spring, tall and springy (#B8C0C8)",
+    "scrap_postcard": "a torn corner of a pink postcard with a bit of a stamp (#F0A8A0)",
+    "button_brass": "a domed brass uniform button with a tiny anchor embossed on it (#D8A848)",
+    "sugar_floss": "a fluffy pink wisp of candy floss (#F8C8E0)",
+    "honey_comb": "a small piece of golden honeycomb with hexagon cells dripping honey (#F0B040)",
+    "gem_aurora": "a chip of glass glowing green and violet like the northern lights (#70E0B0)",
+
+    "pin_eject": "a small steel SIM eject pin: a thin pin with a round loop at one end (#C8CED6)",
+    "coin_contact": "a tiny golden SIM card contact pad, a rounded gold rectangle split into six segments (#E8C048)",
+    "screw_micro": "a very small dark steel screw with a star-shaped head, lying on its side (#9098A8)",
+    "spring_tray": "a short flat steel leaf spring bent into a zigzag (#D0D4DA)",
+    "scrap_envelope": "a torn corner of a white envelope with a row of hidden digits under grey foil (#F0E8D8)",
+    "key_puk": "a small golden key whose bow is shaped like a SIM card with a cut corner (#F0C050)",
+    "magnet_tiny": "a tiny grey round button magnet (#707884)",
+    "ring_gasket": "a small black rubber gasket ring (#303038)",
+    "led_blue": "a blue 5mm LED with two metal legs, glowing a little (#4A8AF0)",
+    "gem_sapphire": "a small deep blue faceted sapphire crumb (#3A5AD8)",
+    "crumb_cracker": "a small square salted cracker with little holes (#E8C080)",
+    "seed_poppy": "a little heap of tiny dark blue-grey poppy seeds (#404858)",
 }
 
 ICONS = {
@@ -128,6 +154,25 @@ PLACES = {
              "sound drawn as soft pink waves rippling out, little yellow sparks of noise.",
     "dome": "The Observatory: under the round glass of the phone camera, a domed lens above showing the night sky with "
             "stars and a crescent moon, a little brass ladder and a telescope on the rim.",
+    "antenna": "The Antenna Loft: an attic under the top edge of a phone, a slanted roof of dark metal with a thin golden "
+               "antenna line running along it, soft blue-white radio waves drifting through like wind, a paper kite tied "
+               "to a beam, feathers floating in the air.",
+    "sim": "The SIM Tray: a long narrow metal drawer pulled half out from the side of a phone, a golden SIM card with "
+           "shiny contacts lying in it like a treasure, a little round eject hole glowing at the end, cool silver light.",
+}
+
+# Whole sheets for a new kind: him sitting, then curled up asleep, drawn after an existing sheet (tools/cut.py cuts them).
+SHEETS = {
+    "otter": (os.path.join(ART, "sheets", "mouse.png"),
+              "The attached sheet shows a mouse sitting (left) and curled up asleep (right). Draw the same kind of sheet, in "
+              "exactly the same pixel art style, proportions, outline, size and layout, but of a cute baby river OTTER: on the "
+              "left the otter sitting and facing the viewer, a round chubby body, small round ears low on the head, a wide "
+              "cream muzzle and chest, a small dark nose, white whiskers, two big dark shiny eyes with a white glint, pink "
+              "blush, little front paws together, and a thick tapering tail curled at its side; on the right the same otter "
+              "curled up asleep facing the viewer, eyes closed as two short curved lines, paws under the chin, the tail "
+              "wrapped round the front. Fur warm brown (#8A5A3A), muzzle, chest and paws cream (#E8D4B8). Two figures only, "
+              "side by side with a wide gap, both the same size as in the reference, nothing else. Transparent background, "
+              "no shadow, no text."),
 }
 
 ROOM = (STYLE + "\n\nA pixel-art background for a cosy game, portrait aspect about 6:7, full bleed, no border, no text, front "
@@ -162,6 +207,8 @@ def jobs():
     out = []
     for k, (ref, w) in PETS.items():
         out.append(("pets_new", k, w, ref))
+    for k, (ref, w) in SHEETS.items():
+        out.append(("sheets", k, w, ref))
     for k, w in FINDS.items():
         out.append(("items", k, ITEM.format(what=w)))
     for k, w in ICONS.items():

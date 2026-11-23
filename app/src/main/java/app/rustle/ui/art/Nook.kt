@@ -687,9 +687,9 @@ object Nook {
     /** A peg rack on the wall: the tools he has made hang here, empty pegs for the rest. */
     private fun rack(b: Buf, s: NookScene) {
         val x = 58; val y = 118
-        b.shadow(x + 21, y + 4, 22, 2, .35f)
-        b.cylH(x, y, 42, 5, WOOD); b.grain(x, y + 1, 42, 3, WOOD.d, 2)
-        for (i in 0 until 3) { val px = x + 6 + i * 14; b.cylV(px, y + 5, 3, 4, WOOD, false); b.p(px, y + 8, WOOD.dd) }
+        b.shadow(x + 34, y + 4, 35, 2, .35f)
+        b.cylH(x, y, 68, 5, WOOD); b.grain(x, y + 1, 68, 3, WOOD.d, 2)
+        for (i in 0 until 5) { val px = x + 6 + i * 14; b.cylV(px, y + 5, 3, 4, WOOD, false); b.p(px, y + 8, WOOD.dd) }
         if ("lantern" in s.built) {
             val lx = x + 7
             b.line(lx, y + 8, lx, y + 11, rgb(0x2A2A34))
@@ -708,6 +708,28 @@ object Nook {
             val ex = x + 35
             b.sag(ex - 6, y + 12, ex + 6, y + 12, -6, STEEL.b); b.sag(ex - 6, y + 13, ex + 6, y + 13, -6, STEEL.d)
             for (dx in listOf(-6, 6)) { b.ell(ex + dx, y + 15, 3, 4, RED.b); b.p(ex + dx - 1, y + 13, RED.l); b.p(ex + dx + 1, y + 18, RED.d); b.ring(ex + dx - 3, y + 11, 7, 9, RED.dd) }
+        }
+        if ("kite" in s.built) {
+            // A paper kite: a diamond in four colours, its tail of bows hanging down the wall.
+            val kx = x + 50; val ky = y + 18
+            b.line(kx - 1, y + 8, kx, ky - 7, INK)
+            val blue = ramp(rgb(0x4A8AD8)); val yellow = ramp(rgb(0xF0C850))
+            for (dy in -7..7) {
+                val half = (7 - kotlin.math.abs(dy)) * 5 / 7
+                for (dx in -half..half) b.p(kx + dx, ky + dy, when { dy < 0 && dx < 0 -> RED.l; dy < 0 -> yellow.b; dx < 0 -> blue.b; else -> RED.d })
+            }
+            b.line(kx - 5, ky, kx + 5, ky, CREAM.l); b.line(kx, ky - 7, kx, ky + 7, CREAM.l)
+            for (dy in -7..7) { val half = (7 - kotlin.math.abs(dy)) * 5 / 7; b.p(kx - half - 1, ky + dy, INK); b.p(kx + half + 1, ky + dy, INK) }
+            b.p(kx, ky - 8, INK); b.p(kx, ky + 8, INK)
+            for (k in 0 until 9) b.p(kx + (if (k % 4 < 2) 0 else 1), ky + 9 + k, INK)
+            for (k in listOf(12, 16)) { b.p(kx - 1, ky + k, RED.b); b.p(kx + 2, ky + k, RED.b); b.p(kx, ky + k, RED.d) }
+        }
+        if ("clip" in s.built) {
+            // The paperclip pick, bent open at the end.
+            val cx = x + 63
+            b.line(cx, y + 8, cx, y + 10, rgb(0x2A2A34))
+            b.ring(cx - 2, y + 11, 5, 14, STEEL.d); b.ring(cx - 1, y + 13, 3, 9, STEEL.l)
+            b.line(cx + 2, y + 24, cx + 4, y + 28, STEEL.b); b.p(cx - 2, y + 12, WHITE)
         }
     }
 

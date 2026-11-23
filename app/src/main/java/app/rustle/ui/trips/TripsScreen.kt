@@ -83,9 +83,9 @@ fun TripsScreen(h: Home, nav: Nav) {
             Text(stringResource(when { h.away != null -> R.string.t_busy_away; h.surfing != null -> R.string.t_busy_net; else -> R.string.t_busy_sleep }, h.name), style = T.Body)
             PixelButton(stringResource(R.string.t_to_home), { nav.tab(Tab.HOME) }, Modifier.fillMaxWidth().padding(top = 8.dp), small = true)
         }
-        // The places as a row of picture cards: all five in reach with a swipe, the chosen one lit.
+        // The places as picture cards, the chosen one lit.
         Section(stringResource(R.string.t_where))
-        // All five places as even rows: the picture, the name on one line, one short line under it.
+        // All the places as even rows: the picture, the name on one line, one short line under it.
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             for (d in District.entries) {
                 val open = d in h.open

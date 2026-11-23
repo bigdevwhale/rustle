@@ -37,6 +37,7 @@ SPECIES = {
     "owl": ("OWL", 0x9A7A5A, 0xF0E0C8),
     "cat": ("CAT", 0x8A8A92, 0xE8E8EE),
     "bat": ("BAT", 0x6A5A6A, 0xD8C8D0),
+    "otter": ("OTTER", 0x8A5A3A, 0xE8D4B8),
 }
 W, H = 48, 44
 GROUND = 42           # the bottom row he stands on
@@ -58,6 +59,7 @@ LIE_EYES = {
     "owl": [(16, 31, 23, 34), (27, 31, 33, 34)],
     "cat": [(11, 33, 16, 35), (27, 33, 32, 35)],
     "bat": [(17, 33, 21, 35), (25, 33, 29, 35)],
+    "otter": [(12, 26, 17, 28), (24, 26, 30, 28)],
 }
 # Where the crown and the neck are, when the guess is off: (crown y, neck y).
 BODY = {}
